@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIVEAL Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #020617;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            color: white;
+        }
+
+        .login-card {
+            background: #1e293b;
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid #334155;
+            width: 350px;
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            border-radius: 8px;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            border-color: #60a5fa;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #60a5fa;
+            border: none;
+            color: black;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .error {
+            color: #f87171;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .success {
+            color: #4ade80;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .auth-links {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .auth-links a {
+            color: #60a5fa;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .auth-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-card">
+        <div id="loginContainer">
+            <h2>SIVEAL ACCESS</h2>
+            <form id="loginForm">
+                <input type="text" id="username" placeholder="Username" required autocomplete="off">
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit">Login</button>
+                <div id="errorMsg" class="error">Access Denied</div>
+            </form>
+            <div class="auth-links">
+                <a href="#" onclick="showRegister()">Create Account</a>
+                <a href="#" onclick="showForgotPassword()">Forgot Password?</a>
+            </div>
+        </div>
+
+        <div id="registerContainer" style="display: none;">
+            <h2>JOIN SIVEAL</h2>
+            <form id="registerForm">
+                <input type="text" id="regUsername" placeholder="Username" required autocomplete="off">
+                <input type="email" id="regEmail" placeholder="Email" required>
+                <input type="password" id="regPassword" placeholder="Password" required>
+                <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
+                <button type="submit">Create Account</button>
+                <div id="regErrorMsg" class="error"></div>
+            </form>
+            <div class="auth-links">
+                <a href="#" onclick="showLogin()">Back to Login</a>
+            </div>
+        </div>
+
+        <div id="forgotContainer" style="display: none;">
+            <h2>RESET PASSWORD</h2>
+            <form id="forgotForm">
+                <input type="email" id="forgotEmail" placeholder="Enter your email" required>
+                <button type="submit">Send Reset Link</button>
+                <div id="forgotErrorMsg" class="error"></div>
+            </form>
+            <div class="auth-links">
+                <a href="#" onclick="showLogin()">Back to Login</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation functions
+        function showLogin() {
+            document.getElementById('loginContainer').style.display = 'block';
+            document.getElementById('registerContainer').style.display = 'none';
+            document.getElementById('forgotContainer').style.display = 'none';
+            clearErrors();
+        }
+
+        function showRegister() {
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('registerContainer').style.display = 'block';
+            document.getElementById('forgotContainer').style.display = 'none';
+            clearErrors();
+        }
+
+        function showForgotPassword() {
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('registerContainer').style.display = 'none';
+            document.getElementById('forgotContainer').style.display = 'block';
+            clearErrors();
+        }
+
+        function clearErrors() {
+            document.getElementById('errorMsg').style.display = 'none';
+            document.getElementById('regErrorMsg').style.display = 'none';
+            document.getElementById('forgotErrorMsg').style.display = 'none';
+        }
+
+        // Login form
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMsg');
+
+            // Clear previous messages
+            errorMsg.style.display = 'none';
+            errorMsg.className = 'error';
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Show success message under login button
+                    errorMsg.textContent = 'Login successful! Redirecting...';
+                    errorMsg.className = 'success';
+                    errorMsg.style.display = 'block';
+
+                    // Redirect after 1 second
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                } else {
+                    errorMsg.textContent = data.error || 'Login failed';
+                    errorMsg.style.display = 'block';
+                }
+            } catch (error) {
+                errorMsg.textContent = 'Network error. Please try again.';
+                errorMsg.style.display = 'block';
+            }
+        });
+
+        // Register form
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+            const errorMsg = document.getElementById('regErrorMsg');
+
+            // Clear previous messages
+            errorMsg.style.display = 'none';
+            errorMsg.className = 'error';
+
+            if (password !== confirmPassword) {
+                errorMsg.textContent = 'Passwords do not match';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            if (password.length < 6) {
+                errorMsg.textContent = 'Password must be at least 6 characters';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Show success message and switch to login
+                    errorMsg.textContent = 'Account created successfully! Switching to login...';
+                    errorMsg.className = 'success';
+                    errorMsg.style.display = 'block';
+
+                    setTimeout(() => {
+                        showLogin();
+                    }, 1500);
+                } else {
+                    errorMsg.textContent = data.error || 'Registration failed';
+                    errorMsg.style.display = 'block';
+                }
+            } catch (error) {
+                errorMsg.textContent = 'Network error. Please try again.';
+                errorMsg.style.display = 'block';
+            }
+        });
+
+        // Forgot password form
+        document.getElementById('forgotForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('forgotEmail').value;
+            const errorMsg = document.getElementById('forgotErrorMsg');
+
+            // Clear previous messages
+            errorMsg.style.display = 'none';
+            errorMsg.className = 'error';
+
+            try {
+                const response = await fetch('/api/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    errorMsg.textContent = 'Password reset link sent to your email!';
+                    errorMsg.className = 'success';
+                    errorMsg.style.display = 'block';
+
+                    setTimeout(() => {
+                        showLogin();
+                    }, 2000);
+                } else {
+                    errorMsg.textContent = data.error || 'Email not found';
+                    errorMsg.style.display = 'block';
+                }
+            } catch (error) {
+                errorMsg.textContent = 'Network error. Please try again.';
+                errorMsg.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>SIVEAL - Global Tech Wire</title>
+        <description>Latest technology news, AI developments, crypto updates, and enterprise solutions from around the world.</description>
+        <link>http://localhost:3000</link>
+        <atom:link href="http://localhost:3000/rss.xml" rel="self" type="application/rss+xml" />
+        <language>en-us</language>
+        <lastBuildDate id="lastBuildDate"></lastBuildDate>
+        <generator>SIVEAL CMS</generator>
+
+        <item id="news-items">
+        </item>
+    </channel>
+</rss>

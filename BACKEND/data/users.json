@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "username": "Flundex",
+    "email": "admin@siveal.com",
+    "password": "Iska1985",
+    "createdAt": "2025-12-21T08:54:34.000Z",
+    "role": "admin"
+  },
+  {
+    "id": 1766293444902,
+    "username": "testuser123",
+    "email": "test@example.com",
+    "password": "123456",
+    "createdAt": "2025-12-21T05:04:04.902Z"
+  }
+]
