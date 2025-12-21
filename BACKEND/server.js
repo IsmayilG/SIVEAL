@@ -8,13 +8,11 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-const frontendPath = path.join(__dirname, '../frontend');
 const dataPath = path.join(__dirname, 'data', 'news.json');
 
-app.use(express.static(frontendPath));
-
+// API endpoints only - frontend served separately by Netlify
 app.get('/', (req, res) => {
-    res.sendFile(path.join(frontendPath, 'index.html'));
+    res.json({ message: 'SIVEAL Backend API', status: 'running' });
 });
 
 app.get('/api/news', (req, res) => {
