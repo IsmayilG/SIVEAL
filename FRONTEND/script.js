@@ -290,26 +290,17 @@ function updateAuthUI(user) {
 
     console.log('Created user button:', userBtn);
 
-    // Find existing login button (either loginBtn or fallback-login-btn)
-    const existingBtn = document.getElementById('loginBtn') || document.getElementById('fallback-login-btn');
+    // Nükleer yöntem: header-actions div'inin içini tamamen temizle ve yeni butonu ekle
+    const headerActions = document.querySelector('.header-actions');
+    console.log('Header actions element:', headerActions);
 
-    console.log('Existing button found:', existingBtn);
-
-    if (existingBtn) {
-        console.log('Replacing existing login button with user button');
-        console.log('Existing button before replace:', existingBtn);
-        existingBtn.replaceWith(userBtn);
-        console.log('User button after replace:', document.getElementById('userBtn'));
+    if (headerActions) {
+        console.log('Clearing header actions and adding user button');
+        headerActions.innerHTML = ''; // Tüm içeriği temizle
+        headerActions.appendChild(userBtn); // Sadece yeni user butonunu ekle
+        console.log('User button added successfully');
     } else {
-        // Fallback: append to header actions
-        const headerActions = document.querySelector('.header-actions');
-        console.log('Header actions element:', headerActions);
-        if (headerActions) {
-            console.log('Appending user button to header actions');
-            headerActions.appendChild(userBtn);
-        } else {
-            console.error('Header actions element not found!');
-        }
+        console.error('Header actions element not found!');
     }
 }
 
