@@ -327,7 +327,11 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Store token
+                    // Clear any old keys first
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+
+                    // Store token with correct keys
                     localStorage.setItem('siveal_token', data.token);
                     localStorage.setItem('siveal_user', JSON.stringify(data.user));
 
@@ -405,7 +409,11 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Store token
+                    // Clear any old keys first
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+
+                    // Store token with correct keys
                     localStorage.setItem('siveal_token', data.token);
                     localStorage.setItem('siveal_user', JSON.stringify(data.user));
 
