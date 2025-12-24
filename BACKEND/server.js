@@ -28,6 +28,11 @@ app.get('/', (req, res) => {
     res.json({ message: 'SIVEAL Backend API', status: 'running' });
 });
 
+// Simple test route
+app.get('/api/test', (req, res) => {
+    res.json({ message: 'API is working!', timestamp: new Date().toISOString() });
+});
+
 app.get('/api/news', (req, res) => {
     fs.readFile(dataPath, 'utf8', (err, data) => {
         if (err) return res.status(500).send('Error');
@@ -240,6 +245,8 @@ function authenticateToken(req, res, next) {
 }
 
 // Auth endpoints
+console.log('Registering auth routes...');
+
 app.post('/api/auth/login', async (req, res) => {
     try {
         const { username, password } = req.body;
