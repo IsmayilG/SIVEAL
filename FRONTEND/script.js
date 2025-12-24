@@ -262,22 +262,34 @@ async function initializeAuth() {
         const token = getAuthToken();
 
         if (user && token) {
-            // Verify token with server
-            const response = await makeAuthenticatedRequest('/api/auth/status');
-            const data = await response.json();
+            // Immediately update UI with stored user data
+            updateAuthUI(user);
 
-            if (response.ok && data.isLoggedIn) {
-                // User is logged in, update UI
-                updateAuthUI(data.user);
-                return;
-            } else {
-                // Token is invalid, clear it
-                clearAuthData();
+            // Then verify token with server in background
+            try {
+                const response = await makeAuthenticatedRequest('/api/auth/status');
+                const data = await response.json();
+
+                if (response.ok && data.isLoggedIn) {
+                    // Token is valid, update UI with fresh data if needed
+                    if (JSON.stringify(data.user) !== JSON.stringify(user)) {
+                        updateAuthUI(data.user);
+                    }
+                    return;
+                } else {
+                    // Token is invalid, clear it and show login
+                    clearAuthData();
+                    showLoginButton();
+                }
+            } catch (statusError) {
+                // If status check fails, keep the user logged in locally
+                // This prevents logout due to temporary network issues
+                console.warn('Token verification failed, keeping user logged in locally:', statusError);
             }
+        } else {
+            // User is not logged in, show login button
+            showLoginButton();
         }
-
-        // User is not logged in or token is invalid, show login button
-        showLoginButton();
     } catch (error) {
         console.error('Auth initialization failed:', error);
         // Always show login button as fallback
