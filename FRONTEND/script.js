@@ -280,35 +280,36 @@ function initializeAuth() {
 function updateAuthUI(user) {
     console.log('Updating auth UI for user:', user);
 
-    // Remove existing login button if it exists
-    const existingLoginBtn = document.getElementById('loginBtn');
-    if (existingLoginBtn) {
-        console.log('Removing existing login button');
-        existingLoginBtn.remove();
-    }
+    // Create the new user button
+    const userBtn = document.createElement('a');
+    userBtn.id = 'userBtn';
+    userBtn.href = 'profile.html';
+    userBtn.className = 'login-btn'; // Use same class as login button for consistent styling
+    userBtn.textContent = user.username;
+    userBtn.style.cssText = 'display: inline-block !important; background: linear-gradient(45deg, #60a5fa, #8b5cf6) !important; color: white !important; padding: 8px 20px !important; border-radius: 100px !important; text-decoration: none !important; font-weight: 600 !important; border: none !important; cursor: pointer !important;';
 
-    // Remove fallback login button if it exists
-    const fallbackBtn = document.getElementById('fallback-login-btn');
-    if (fallbackBtn) {
-        console.log('Hiding fallback login button');
-        fallbackBtn.style.display = 'none';
-    }
+    console.log('Created user button:', userBtn);
 
-    // Add user button to header actions (same style as login button)
-    const headerActions = document.querySelector('.header-actions');
-    console.log('Header actions element:', headerActions);
+    // Find existing login button (either loginBtn or fallback-login-btn)
+    const existingBtn = document.getElementById('loginBtn') || document.getElementById('fallback-login-btn');
 
-    if (headerActions) {
-        const userBtn = document.createElement('a');
-        userBtn.id = 'userBtn';
-        userBtn.href = 'profile.html';
-        userBtn.className = 'login-btn'; // Use same class as login button for consistent styling
-        userBtn.textContent = user.username;
+    console.log('Existing button found:', existingBtn);
 
-        console.log('Appending user button to header actions');
-        headerActions.appendChild(userBtn);
+    if (existingBtn) {
+        console.log('Replacing existing login button with user button');
+        console.log('Existing button before replace:', existingBtn);
+        existingBtn.replaceWith(userBtn);
+        console.log('User button after replace:', document.getElementById('userBtn'));
     } else {
-        console.error('Header actions element not found!');
+        // Fallback: append to header actions
+        const headerActions = document.querySelector('.header-actions');
+        console.log('Header actions element:', headerActions);
+        if (headerActions) {
+            console.log('Appending user button to header actions');
+            headerActions.appendChild(userBtn);
+        } else {
+            console.error('Header actions element not found!');
+        }
     }
 }
 
