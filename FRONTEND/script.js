@@ -242,7 +242,10 @@ function makeAuthenticatedRequest(url, options = {}) {
         throw new Error('No authentication token found');
     }
 
-    return fetch(url, {
+    // Ensure URL uses full API_BASE_URL
+    const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+
+    return fetch(fullUrl, {
         ...options,
         headers: {
             'Authorization': `Bearer ${token}`,
