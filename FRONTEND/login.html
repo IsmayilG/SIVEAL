@@ -251,6 +251,13 @@
     </div>
 
     <script>
+        // API Base URL for production
+        const API_BASE_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:3000'
+            : 'https://siveal-backend.onrender.com';
+
+        console.log('Login API Base URL:', API_BASE_URL);
+
         let currentTab = 'login';
 
         function showTab(tab) {
@@ -309,7 +316,7 @@
             setLoading('loginBtn', 'loginText', true);
 
             try {
-                const response = await fetch('/api/auth/login', {
+                const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -367,7 +374,7 @@
             setLoading('registerBtn', 'registerText', true);
 
             try {
-                const response = await fetch('/api/auth/register', {
+                const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
