@@ -191,16 +191,34 @@ document.addEventListener('DOMContentLoaded', () => {
     applyLanguage(currentLanguage);
     fetchNews();
 
+    // Show fallback login button immediately
+    const fallbackBtn = document.getElementById('fallback-login-btn');
+    if (fallbackBtn) {
+        fallbackBtn.style.display = 'inline-block';
+        console.log('Showing fallback login button');
+    }
+
     // Initialize authentication with fallback
     initializeAuth();
 
-    // Always show login button after a short delay as fallback
-    setTimeout(() => {
-        if (!document.getElementById('loginBtn') && !document.getElementById('userBtn')) {
-            console.log('Auth check failed or timed out, showing login button as fallback');
-            showLoginButton();
+    // Hide fallback button when proper auth UI is loaded
+    function hideFallbackIfNeeded() {
+        const fallbackBtn = document.getElementById('fallback-login-btn');
+        if (fallbackBtn && (document.getElementById('loginBtn') || document.getElementById('userBtn'))) {
+            fallbackBtn.style.display = 'none';
+            console.log('Hiding fallback login button - proper auth UI loaded');
         }
-    }, 2000); // Show login button after 2 seconds if auth check doesn't work
+    }
+
+    // Check every second for 10 seconds
+    let checkCount = 0;
+    const checkInterval = setInterval(() => {
+        checkCount++;
+        hideFallbackIfNeeded();
+        if (checkCount >= 10) {
+            clearInterval(checkInterval);
+        }
+    }, 1000);
 });
 
 // Authentication utilities
