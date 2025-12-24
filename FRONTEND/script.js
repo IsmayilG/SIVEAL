@@ -191,12 +191,8 @@ document.addEventListener('DOMContentLoaded', () => {
     applyLanguage(currentLanguage);
     fetchNews();
 
-    // Show fallback login button immediately
-    const fallbackBtn = document.getElementById('fallback-login-btn');
-    if (fallbackBtn) {
-        fallbackBtn.style.display = 'inline-block';
-        console.log('Showing fallback login button');
-    }
+    // Fallback login button is already visible in HTML with inline styles
+    console.log('Fallback login button should be visible');
 
     // Initialize authentication with fallback
     initializeAuth();
