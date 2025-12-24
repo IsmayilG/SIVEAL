@@ -191,8 +191,16 @@ document.addEventListener('DOMContentLoaded', () => {
     applyLanguage(currentLanguage);
     fetchNews();
 
-    // Initialize authentication
+    // Initialize authentication with fallback
     initializeAuth();
+
+    // Always show login button after a short delay as fallback
+    setTimeout(() => {
+        if (!document.getElementById('loginBtn') && !document.getElementById('userBtn')) {
+            console.log('Auth check failed or timed out, showing login button as fallback');
+            showLoginButton();
+        }
+    }, 2000); // Show login button after 2 seconds if auth check doesn't work
 });
 
 // Authentication utilities
@@ -227,15 +235,31 @@ function makeAuthenticatedRequest(url, options = {}) {
 }
 
 // Initialize authentication on page load
-function initializeAuth() {
-    const user = getCurrentUser();
-    const token = getAuthToken();
+async function initializeAuth() {
+    try {
+        const user = getCurrentUser();
+        const token = getAuthToken();
 
-    if (user && token) {
-        // User is logged in, update UI
-        updateAuthUI(user);
-    } else {
-        // User is not logged in, show login button
+        if (user && token) {
+            // Verify token with server
+            const response = await makeAuthenticatedRequest('/api/auth/status');
+            const data = await response.json();
+
+            if (response.ok && data.isLoggedIn) {
+                // User is logged in, update UI
+                updateAuthUI(data.user);
+                return;
+            } else {
+                // Token is invalid, clear it
+                clearAuthData();
+            }
+        }
+
+        // User is not logged in or token is invalid, show login button
+        showLoginButton();
+    } catch (error) {
+        console.error('Auth initialization failed:', error);
+        // Always show login button as fallback
         showLoginButton();
     }
 }
