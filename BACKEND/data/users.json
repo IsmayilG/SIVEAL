@@ -1,17 +1,12 @@
 [
   {
     "id": 1,
-    "username": "Flundex",
+    "username": "admin",
     "email": "admin@siveal.com",
-    "password": "Iska1985",
-    "createdAt": "2025-12-21T08:54:34.000Z",
-    "role": "admin"
-  },
-  {
-    "id": 1766293444902,
-    "username": "testuser123",
-    "email": "test@example.com",
-    "password": "123456",
-    "createdAt": "2025-12-21T05:04:04.902Z"
+    "password": "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi",
+    "role": "admin",
+    "createdAt": "2025-12-24T15:41:30.000Z",
+    "lastLogin": null,
+    "isActive": true
   }
 ]

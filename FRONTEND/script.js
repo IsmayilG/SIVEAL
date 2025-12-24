@@ -190,7 +190,208 @@ document.addEventListener('DOMContentLoaded', () => {
 
     applyLanguage(currentLanguage);
     fetchNews();
+
+    // Initialize authentication
+    initializeAuth();
 });
+
+// Authentication utilities
+function getAuthToken() {
+    return localStorage.getItem('siveal_token');
+}
+
+function getCurrentUser() {
+    const userData = localStorage.getItem('siveal_user');
+    return userData ? JSON.parse(userData) : null;
+}
+
+function clearAuthData() {
+    localStorage.removeItem('siveal_token');
+    localStorage.removeItem('siveal_user');
+}
+
+function makeAuthenticatedRequest(url, options = {}) {
+    const token = getAuthToken();
+    if (!token) {
+        throw new Error('No authentication token found');
+    }
+
+    return fetch(url, {
+        ...options,
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+}
+
+// Initialize authentication on page load
+function initializeAuth() {
+    const user = getCurrentUser();
+    const token = getAuthToken();
+
+    if (user && token) {
+        // User is logged in, update UI
+        updateAuthUI(user);
+    } else {
+        // User is not logged in, show login button
+        showLoginButton();
+    }
+}
+
+function updateAuthUI(user) {
+    // Remove existing login button if it exists
+    const existingLoginBtn = document.getElementById('loginBtn');
+    if (existingLoginBtn) {
+        existingLoginBtn.remove();
+    }
+
+    // Add user menu button to header actions
+    const headerActions = document.querySelector('.header-actions');
+    if (headerActions) {
+        const userBtn = document.createElement('button');
+        userBtn.id = 'userBtn';
+        userBtn.className = 'user-btn';
+        userBtn.innerHTML = `
+            <span class="user-name">${user.username}</span>
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M7 10l5 5 5-5z"/>
+            </svg>
+        `;
+        userBtn.onclick = showUserMenu;
+
+        headerActions.appendChild(userBtn);
+
+        // Create user menu
+        createUserMenu();
+    }
+}
+
+function showLoginButton() {
+    // Remove existing user button if it exists
+    const existingUserBtn = document.getElementById('userBtn');
+    if (existingUserBtn) {
+        existingUserBtn.remove();
+    }
+
+    // Remove user menu if it exists
+    const existingMenu = document.getElementById('userMenu');
+    if (existingMenu) {
+        existingMenu.remove();
+    }
+
+    // Add login button to header actions
+    const headerActions = document.querySelector('.header-actions');
+    if (headerActions) {
+        const loginBtn = document.createElement('a');
+        loginBtn.id = 'loginBtn';
+        loginBtn.href = 'login.html';
+        loginBtn.className = 'login-btn';
+        loginBtn.textContent = 'Login';
+        headerActions.appendChild(loginBtn);
+    }
+}
+
+function createUserMenu() {
+    // Remove existing menu
+    const existingMenu = document.getElementById('userMenu');
+    if (existingMenu) {
+        existingMenu.remove();
+    }
+
+    const menu = document.createElement('div');
+    menu.id = 'userMenu';
+    menu.className = 'user-menu';
+    menu.innerHTML = `
+        <div class="user-menu-item" onclick="goToProfile()">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+            Profile
+        </div>
+        <div class="user-menu-item" onclick="goToAdmin()">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+            Admin Panel
+        </div>
+        <div class="user-menu-item logout" onclick="logout()">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+            </svg>
+            Logout
+        </div>
+    `;
+
+    document.body.appendChild(menu);
+
+    // Hide admin panel option if user is not admin
+    const user = getCurrentUser();
+    if (!user || user.role !== 'admin') {
+        const adminItem = menu.querySelector('.user-menu-item:nth-child(2)');
+        if (adminItem) {
+            adminItem.style.display = 'none';
+        }
+    }
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        const userBtn = document.getElementById('userBtn');
+        const menu = document.getElementById('userMenu');
+        if (menu && userBtn && !userBtn.contains(e.target) && !menu.contains(e.target)) {
+            menu.classList.remove('show');
+        }
+    });
+}
+
+function showUserMenu() {
+    const menu = document.getElementById('userMenu');
+    if (menu) {
+        menu.classList.toggle('show');
+    }
+}
+
+function goToProfile() {
+    window.location.href = 'profile.html';
+}
+
+function goToAdmin() {
+    window.location.href = 'admin.html';
+}
+
+async function logout() {
+    try {
+        await fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST' });
+    } catch (error) {
+        console.error('Logout error:', error);
+    }
+
+    clearAuthData();
+    showLoginButton();
+
+    // Optional: Show logout message
+    showNotification('Logged out successfully', 'success');
+}
+
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Show notification
+    setTimeout(() => notification.classList.add('show'), 100);
+
+    // Hide and remove after 3 seconds
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
 
 
 

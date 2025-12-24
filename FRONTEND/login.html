@@ -1,305 +1,411 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIVEAL Login</title>
+    <title>SIVEAL - Login</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        body {
-            background-color: #020617;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        * {
             margin: 0;
-            font-family: 'Inter', sans-serif;
-            color: white;
-        }
-
-        .login-card {
-            background: #1e293b;
-            padding: 40px;
-            border-radius: 16px;
-            border: 1px solid #334155;
-            width: 350px;
-            text-align: center;
-        }
-
-        h2 {
-            margin-bottom: 20px;
-            letter-spacing: 2px;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            background: #0f172a;
-            border: 1px solid #334155;
-            color: white;
-            border-radius: 8px;
-            outline: none;
+            padding: 0;
             box-sizing: border-box;
         }
 
-        input:focus {
-            border-color: #60a5fa;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background: #60a5fa;
-            border: none;
-            color: black;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            opacity: 0.9;
-        }
-
-        .error {
-            color: #f87171;
-            font-size: 0.85rem;
-            margin-top: 10px;
-            display: none;
-        }
-
-        .success {
-            color: #4ade80;
-            font-size: 0.85rem;
-            margin-top: 10px;
-            display: none;
-        }
-
-        .auth-links {
-            margin-top: 20px;
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            font-family: 'Inter', sans-serif;
+            color: #e2e8f0;
+            min-height: 100vh;
             display: flex;
-            justify-content: space-between;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
 
-        .auth-links a {
-            color: #60a5fa;
-            text-decoration: none;
+        .container {
+            background: #1e293b;
+            border-radius: 16px;
+            border: 1px solid #334155;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            background: linear-gradient(45deg, #60a5fa, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .logo p {
+            color: #64748b;
             font-size: 0.9rem;
         }
 
-        .auth-links a:hover {
-            text-decoration: underline;
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 30px;
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            color: #64748b;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tab-btn.active {
+            background: #60a5fa;
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #e2e8f0;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: #64748b;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(45deg, #60a5fa, #8b5cf6);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(96, 165, 250, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .message.error {
+            background: #dc2626;
+            color: white;
+        }
+
+        .message.success {
+            background: #16a34a;
+            color: white;
+        }
+
+        .links {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .links a {
+            color: #60a5fa;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .links a:hover {
+            color: #8b5cf6;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            .logo h1 {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
-
 <body>
-    <div class="login-card">
-        <div id="loginContainer">
-            <h2>SIVEAL ACCESS</h2>
-            <form id="loginForm">
-                <input type="text" id="username" placeholder="Username" required autocomplete="off">
-                <input type="password" id="password" placeholder="Password" required>
-                <button type="submit">Login</button>
-                <div id="errorMsg" class="error">Access Denied</div>
-            </form>
-            <div class="auth-links">
-                <a href="#" onclick="showRegister()">Create Account</a>
-                <a href="#" onclick="showForgotPassword()">Forgot Password?</a>
-            </div>
+    <div class="container">
+        <div class="logo">
+            <h1>SIVEAL</h1>
+            <p>Access Your Account</p>
         </div>
 
-        <div id="registerContainer" style="display: none;">
-            <h2>JOIN SIVEAL</h2>
-            <form id="registerForm">
-                <input type="text" id="regUsername" placeholder="Username" required autocomplete="off">
-                <input type="email" id="regEmail" placeholder="Email" required>
-                <input type="password" id="regPassword" placeholder="Password" required>
-                <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
-                <button type="submit">Create Account</button>
-                <div id="regErrorMsg" class="error"></div>
-            </form>
-            <div class="auth-links">
-                <a href="#" onclick="showLogin()">Back to Login</a>
-            </div>
+        <div class="tab-buttons">
+            <button class="tab-btn active" onclick="showTab('login')">Login</button>
+            <button class="tab-btn" onclick="showTab('register')">Register</button>
         </div>
 
-        <div id="forgotContainer" style="display: none;">
-            <h2>RESET PASSWORD</h2>
-            <form id="forgotForm">
-                <input type="email" id="forgotEmail" placeholder="Enter your email" required>
-                <button type="submit">Send Reset Link</button>
-                <div id="forgotErrorMsg" class="error"></div>
-            </form>
-            <div class="auth-links">
-                <a href="#" onclick="showLogin()">Back to Login</a>
+        <form id="loginForm" class="auth-form">
+            <div class="form-group">
+                <label for="loginUsername">Username</label>
+                <input type="text" id="loginUsername" placeholder="Enter your username" required>
             </div>
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="btn" id="loginBtn">
+                <span id="loginText">Login</span>
+            </button>
+        </form>
+
+        <form id="registerForm" class="auth-form" style="display: none;">
+            <div class="form-group">
+                <label for="registerUsername">Username</label>
+                <input type="text" id="registerUsername" placeholder="Choose a username" required>
+            </div>
+            <div class="form-group">
+                <label for="registerEmail">Email</label>
+                <input type="email" id="registerEmail" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+                <label for="registerPassword">Password</label>
+                <input type="password" id="registerPassword" placeholder="Create a password" required minlength="6">
+            </div>
+            <div class="form-group">
+                <label for="registerConfirmPassword">Confirm Password</label>
+                <input type="password" id="registerConfirmPassword" placeholder="Confirm your password" required>
+            </div>
+            <button type="submit" class="btn" id="registerBtn">
+                <span id="registerText">Create Account</span>
+            </button>
+        </form>
+
+        <div id="message" class="message" style="display: none;"></div>
+
+        <div class="links">
+            <a href="index.html">← Back to Home</a>
         </div>
     </div>
 
     <script>
-        // Navigation functions
-        function showLogin() {
-            document.getElementById('loginContainer').style.display = 'block';
-            document.getElementById('registerContainer').style.display = 'none';
-            document.getElementById('forgotContainer').style.display = 'none';
-            clearErrors();
+        let currentTab = 'login';
+
+        function showTab(tab) {
+            currentTab = tab;
+
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[onclick="showTab('${tab}')"]`).classList.add('active');
+
+            // Show/hide forms
+            document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+            document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+
+            // Clear messages
+            showMessage('', '');
         }
 
-        function showRegister() {
-            document.getElementById('loginContainer').style.display = 'none';
-            document.getElementById('registerContainer').style.display = 'block';
-            document.getElementById('forgotContainer').style.display = 'none';
-            clearErrors();
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            if (text) {
+                messageEl.textContent = text;
+                messageEl.className = `message ${type}`;
+                messageEl.style.display = 'block';
+            } else {
+                messageEl.style.display = 'none';
+            }
         }
 
-        function showForgotPassword() {
-            document.getElementById('loginContainer').style.display = 'none';
-            document.getElementById('registerContainer').style.display = 'none';
-            document.getElementById('forgotContainer').style.display = 'block';
-            clearErrors();
+        function setLoading(buttonId, textId, loading) {
+            const button = document.getElementById(buttonId);
+            const text = document.getElementById(textId);
+
+            button.disabled = loading;
+
+            if (loading) {
+                text.innerHTML = '<span class="loading"></span>Processing...';
+            } else {
+                text.textContent = buttonId === 'loginBtn' ? 'Login' : 'Create Account';
+            }
         }
 
-        function clearErrors() {
-            document.getElementById('errorMsg').style.display = 'none';
-            document.getElementById('regErrorMsg').style.display = 'none';
-            document.getElementById('forgotErrorMsg').style.display = 'none';
-        }
-
-        // Login form
+        // Login form handler
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const errorMsg = document.getElementById('errorMsg');
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
 
-            // Clear previous messages
-            errorMsg.style.display = 'none';
-            errorMsg.className = 'error';
+            if (!username || !password) {
+                showMessage('Please fill in all fields', 'error');
+                return;
+            }
+
+            setLoading('loginBtn', 'loginText', true);
 
             try {
-                const response = await fetch('/api/login', {
+                const response = await fetch('/api/auth/login', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({ username, password })
                 });
 
                 const data = await response.json();
 
-                if (response.ok && data.success) {
-                    // Show success message under login button
-                    errorMsg.textContent = 'Login successful! Redirecting...';
-                    errorMsg.className = 'success';
-                    errorMsg.style.display = 'block';
+                if (response.ok) {
+                    // Store token
+                    localStorage.setItem('siveal_token', data.token);
+                    localStorage.setItem('siveal_user', JSON.stringify(data.user));
 
-                    // Redirect after 1 second
+                    showMessage('Login successful! Redirecting...', 'success');
+
+                    // Redirect after short delay
                     setTimeout(() => {
-                        window.location.href = '/';
-                    }, 1000);
+                        window.location.href = 'index.html';
+                    }, 1500);
                 } else {
-                    errorMsg.textContent = data.error || 'Login failed';
-                    errorMsg.style.display = 'block';
+                    showMessage(data.error || 'Login failed', 'error');
                 }
             } catch (error) {
-                errorMsg.textContent = 'Network error. Please try again.';
-                errorMsg.style.display = 'block';
+                showMessage('Network error. Please try again.', 'error');
+            } finally {
+                setLoading('loginBtn', 'loginText', false);
             }
         });
 
-        // Register form
+        // Register form handler
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const username = document.getElementById('regUsername').value;
-            const email = document.getElementById('regEmail').value;
-            const password = document.getElementById('regPassword').value;
-            const confirmPassword = document.getElementById('regConfirmPassword').value;
-            const errorMsg = document.getElementById('regErrorMsg');
+            const username = document.getElementById('registerUsername').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
 
-            // Clear previous messages
-            errorMsg.style.display = 'none';
-            errorMsg.className = 'error';
+            if (!username || !email || !password || !confirmPassword) {
+                showMessage('Please fill in all fields', 'error');
+                return;
+            }
 
             if (password !== confirmPassword) {
-                errorMsg.textContent = 'Passwords do not match';
-                errorMsg.style.display = 'block';
+                showMessage('Passwords do not match', 'error');
                 return;
             }
 
             if (password.length < 6) {
-                errorMsg.textContent = 'Password must be at least 6 characters';
-                errorMsg.style.display = 'block';
+                showMessage('Password must be at least 6 characters', 'error');
                 return;
             }
 
+            setLoading('registerBtn', 'registerText', true);
+
             try {
-                const response = await fetch('/api/register', {
+                const response = await fetch('/api/auth/register', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({ username, email, password })
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Show success message and switch to login
-                    errorMsg.textContent = 'Account created successfully! Switching to login...';
-                    errorMsg.className = 'success';
-                    errorMsg.style.display = 'block';
+                    // Store token
+                    localStorage.setItem('siveal_token', data.token);
+                    localStorage.setItem('siveal_user', JSON.stringify(data.user));
 
+                    showMessage('Account created successfully! Redirecting...', 'success');
+
+                    // Redirect after short delay
                     setTimeout(() => {
-                        showLogin();
+                        window.location.href = 'index.html';
                     }, 1500);
                 } else {
-                    errorMsg.textContent = data.error || 'Registration failed';
-                    errorMsg.style.display = 'block';
+                    showMessage(data.error || 'Registration failed', 'error');
                 }
             } catch (error) {
-                errorMsg.textContent = 'Network error. Please try again.';
-                errorMsg.style.display = 'block';
+                showMessage('Network error. Please try again.', 'error');
+            } finally {
+                setLoading('registerBtn', 'registerText', false);
             }
         });
 
-        // Forgot password form
-        document.getElementById('forgotForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('forgotEmail').value;
-            const errorMsg = document.getElementById('forgotErrorMsg');
-
-            // Clear previous messages
-            errorMsg.style.display = 'none';
-            errorMsg.className = 'error';
-
-            try {
-                const response = await fetch('/api/forgot-password', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    errorMsg.textContent = 'Password reset link sent to your email!';
-                    errorMsg.className = 'success';
-                    errorMsg.style.display = 'block';
-
-                    setTimeout(() => {
-                        showLogin();
-                    }, 2000);
-                } else {
-                    errorMsg.textContent = data.error || 'Email not found';
-                    errorMsg.style.display = 'block';
-                }
-            } catch (error) {
-                errorMsg.textContent = 'Network error. Please try again.';
-                errorMsg.style.display = 'block';
+        // Check if already logged in
+        window.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('siveal_token');
+            if (token) {
+                // Redirect to home if already logged in
+                window.location.href = 'index.html';
             }
         });
     </script>
 </body>
-
 </html>

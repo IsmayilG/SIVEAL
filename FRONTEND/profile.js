@@ -1,65 +1,117 @@
+// Global variables
 let currentUser = null;
 let currentTab = 'overview';
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Check authentication
-    checkAuthForProfile();
+// Authentication utilities
+function getAuthToken() {
+    return localStorage.getItem('siveal_token');
+}
 
-    // Setup tab switching
-    setupTabNavigation();
+function getCurrentUser() {
+    const userData = localStorage.getItem('siveal_user');
+    return userData ? JSON.parse(userData) : null;
+}
 
-    // Setup profile editing
-    setupProfileEditing();
+function setAuthData(token, user) {
+    localStorage.setItem('siveal_token', token);
+    localStorage.setItem('siveal_user', JSON.stringify(user));
+    currentUser = user;
+}
 
-    // Setup password change
-    setupPasswordChange();
+function clearAuthData() {
+    localStorage.removeItem('siveal_token');
+    localStorage.removeItem('siveal_user');
+    currentUser = null;
+}
 
-    // Setup avatar editing
-    setupAvatarEditing();
+function makeAuthenticatedRequest(url, options = {}) {
+    const token = getAuthToken();
+    if (!token) {
+        throw new Error('No authentication token found');
+    }
 
-    // Setup activity filtering
-    setupActivityFiltering();
+    return fetch(url, {
+        ...options,
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+}
 
-    // Load initial data
-    loadProfileData();
-});
-
-async function checkAuthForProfile() {
+// Check authentication on page load
+async function checkAuth() {
     try {
-        const response = await fetch('/api/auth/status');
+        const token = getAuthToken();
+        if (!token) {
+            redirectToLogin();
+            return false;
+        }
+
+        const response = await makeAuthenticatedRequest('/api/auth/status');
         const data = await response.json();
 
-        if (!data.isLoggedIn) {
-            window.location.href = '/login.html';
-            return;
-        }
-
-        currentUser = {
-            username: data.username,
-            role: data.role
-        };
-
-        console.log('Auth check successful:', currentUser);
-
-        // Update header login button
-        const loginBtn = document.getElementById('loginBtn');
-        if (loginBtn) {
-            loginBtn.textContent = 'Profile';
-            loginBtn.href = '#';
-            loginBtn.onclick = () => showProfileMenu();
+        if (response.ok && data.isLoggedIn) {
+            currentUser = data.user;
+            updateHeaderLoginButton();
+            return true;
+        } else {
+            clearAuthData();
+            redirectToLogin();
+            return false;
         }
     } catch (error) {
-        console.log('Auth check failed');
-        window.location.href = '/login.html';
+        console.error('Auth check failed:', error);
+        clearAuthData();
+        redirectToLogin();
+        return false;
+    }
+}
+
+function redirectToLogin() {
+    window.location.href = 'login.html';
+}
+
+function updateHeaderLoginButton() {
+    const loginBtn = document.getElementById('loginBtn');
+    if (loginBtn && currentUser) {
+        loginBtn.textContent = currentUser.username;
+        loginBtn.href = '#';
+        loginBtn.onclick = (e) => {
+            e.preventDefault();
+            showProfileMenu();
+        };
     }
 }
 
 function showProfileMenu() {
-    // Same as index.js
-    if (confirm('Çıkış yapmak istiyor musun?')) {
-        window.location.href = '/logout';
+    if (confirm('Çıkış yapmak istiyor musun? (Do you want to logout?)')) {
+        logout();
     }
 }
+
+async function logout() {
+    try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (error) {
+        console.error('Logout error:', error);
+    }
+
+    clearAuthData();
+    window.location.href = 'index.html';
+}
+
+// Profile management
+document.addEventListener('DOMContentLoaded', async () => {
+    const isAuthenticated = await checkAuth();
+    if (!isAuthenticated) return;
+
+    setupTabNavigation();
+    setupProfileEditing();
+    setupPasswordChange();
+    loadProfileData();
+});
 
 function setupTabNavigation() {
     const tabButtons = document.querySelectorAll('.profile-nav-btn');
@@ -69,7 +121,6 @@ function setupTabNavigation() {
             const tabName = button.getAttribute('data-tab');
             switchTab(tabName);
 
-            // Update active button
             tabButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
         });
@@ -79,17 +130,14 @@ function setupTabNavigation() {
 function switchTab(tabName) {
     currentTab = tabName;
 
-    // Hide all tabs
     const tabs = document.querySelectorAll('.profile-tab');
     tabs.forEach(tab => tab.classList.remove('active'));
 
-    // Show selected tab
     const selectedTab = document.getElementById(`${tabName}-tab`);
     if (selectedTab) {
         selectedTab.classList.add('active');
 
-        // Load admin dashboard data if admin tab is selected
-        if (tabName === 'admin') {
+        if (tabName === 'admin' && currentUser?.role === 'admin') {
             loadAdminDashboard();
         }
     }
@@ -97,185 +145,82 @@ function switchTab(tabName) {
 
 async function loadAdminDashboard() {
     try {
-        const response = await fetch('/api/stats');
+        const response = await makeAuthenticatedRequest('/api/admin/stats');
         const stats = await response.json();
 
-        // Update admin stats
         document.getElementById('total-articles').textContent = stats.totalArticles || '0';
-        document.getElementById('total-users').textContent = stats.totalUsers || '1';
-        document.getElementById('total-views').textContent = stats.totalViews || '0';
+        document.getElementById('total-users').textContent = stats.totalUsers || '0';
+        document.getElementById('total-views').textContent = (stats.totalViews || 0).toLocaleString();
 
-        // Calculate recent comments (mock data for now)
-        document.getElementById('recent-comments').textContent = '12';
-
+        // Show admin navigation
+        document.getElementById('admin-nav-btn').style.display = 'block';
     } catch (error) {
         console.error('Error loading admin dashboard:', error);
-        // Set default values
-        document.getElementById('total-articles').textContent = '0';
-        document.getElementById('total-users').textContent = '1';
-        document.getElementById('total-views').textContent = '0';
-        document.getElementById('recent-comments').textContent = '0';
+        showMessage('Failed to load admin data', 'error');
     }
 }
 
 async function loadProfileData() {
     try {
-        alert('🔄 Loading profile data...');
-
-        // Test with a working endpoint first
-        alert('🔍 Testing /api/news endpoint first...');
-        const newsResponse = await fetch('/api/news');
-        alert(`📄 News API response: ${newsResponse.status}`);
-
-        if (!newsResponse.ok) {
-            alert('💥 Even /api/news is not working! Server is down.');
-            throw new Error('Server is not responding');
-        }
-
-        alert('✅ Server is working, now testing /api/profile...');
-
-        // Load user profile data
-        const profileResponse = await fetch('/api/profile');
-        alert(`📥 Profile API response: ${profileResponse.status}`);
-
-        if (!profileResponse.ok) {
-            throw new Error(`Profile API failed: ${profileResponse.status}`);
-        }
-
-        const profileData = await profileResponse.json();
-        alert(`📄 Profile data received: ${JSON.stringify(profileData)}`);
+        const response = await makeAuthenticatedRequest('/api/profile');
+        const profileData = await response.json();
 
         // Update profile info
-        document.getElementById('profile-name').textContent = profileData.displayName || currentUser.username;
-        document.getElementById('profile-email').textContent = profileData.email || 'Error loading...';
-        document.getElementById('profile-role').textContent = currentUser.role === 'admin' ? 'Administrator' : 'Member';
-        document.getElementById('profile-joined').textContent = `Joined: ${profileData.joinedAt || 'Recently'}`;
-
-        // Update avatar
-        if (profileData.avatar) {
-            document.getElementById('profile-avatar').src = profileData.avatar;
-        }
-
-        // Update stats
-        document.getElementById('articles-read').textContent = profileData.articlesRead || '0';
-        document.getElementById('comments-posted').textContent = profileData.commentsPosted || '0';
-        document.getElementById('account-age').textContent = profileData.accountAge || '0';
-        document.getElementById('favorite-category').textContent = profileData.favoriteCategory || 'N/A';
+        document.getElementById('profile-name').textContent = profileData.username;
+        document.getElementById('profile-email').textContent = profileData.email;
+        document.getElementById('profile-role').textContent = profileData.role === 'admin' ? 'Administrator' : 'Member';
+        document.getElementById('profile-joined').textContent = `Joined: ${new Date(profileData.createdAt).toLocaleDateString()}`;
+        document.getElementById('profile-last-login').textContent = profileData.lastLogin ?
+            `Last Login: ${new Date(profileData.lastLogin).toLocaleDateString()}` : 'Last Login: Never';
 
         // Update edit form
-        document.getElementById('edit-display-name').value = profileData.displayName || '';
-        document.getElementById('edit-bio').value = profileData.bio || '';
-        document.getElementById('edit-website').value = profileData.website || '';
-        document.getElementById('edit-location').value = profileData.location || '';
+        document.getElementById('edit-email').value = profileData.email;
 
-        // Load activity
-        loadActivityData();
-
-        // Show admin nav button if user is admin
-        alert(`👤 Current user role: ${currentUser.role}`);
-        if (currentUser.role === 'admin') {
-            alert('✅ Showing admin nav button');
-            document.getElementById('admin-nav-btn').style.display = 'block';
-        } else {
-            alert('❌ Hiding admin nav button - user is not admin');
+        // Show admin tab if user is admin
+        if (currentUser?.role === 'admin') {
+            document.querySelector('[data-tab="admin"]').style.display = 'block';
         }
 
-        alert('✅ Profile data loaded successfully!');
-
     } catch (error) {
-        alert(`💥 Error loading profile data: ${error.message}`);
         console.error('Error loading profile data:', error);
-
-        // Show default data
-        document.getElementById('profile-name').textContent = currentUser ? currentUser.username : 'Unknown';
-        document.getElementById('profile-email').textContent = 'Error loading profile';
-        document.getElementById('profile-role').textContent = 'Member';
-        document.getElementById('profile-joined').textContent = 'Joined: Recently';
+        showMessage('Failed to load profile data', 'error');
     }
-}
-
-async function loadActivityData() {
-    try {
-        const response = await fetch('/api/user/activity');
-        const activities = await response.json();
-
-        const activityList = document.getElementById('activity-list');
-        if (activities.length === 0) {
-            activityList.innerHTML = '<p>No activity found</p>';
-            return;
-        }
-
-        activityList.innerHTML = activities.map(activity => `
-            <div class="activity-item">
-                <div class="activity-icon">
-                    ${getActivityIcon(activity.type)}
-                </div>
-                <div class="activity-content">
-                    <h4>${activity.title}</h4>
-                    <p>${activity.description} • ${new Date(activity.timestamp).toLocaleDateString()}</p>
-                </div>
-            </div>
-        `).join('');
-
-    } catch (error) {
-        console.error('Error loading activity:', error);
-        document.getElementById('activity-list').innerHTML = '<p>Unable to load activity</p>';
-    }
-}
-
-function getActivityIcon(type) {
-    const icons = {
-        'article_read': '📖',
-        'comment_posted': '💬',
-        'article_liked': '👍',
-        'profile_updated': '👤'
-    };
-    return icons[type] || '📝';
 }
 
 function setupProfileEditing() {
     const editForm = document.getElementById('profile-edit-form');
-    const statusDiv = document.getElementById('edit-status');
 
     editForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const formData = {
-            displayName: document.getElementById('edit-display-name').value,
-            bio: document.getElementById('edit-bio').value,
-            website: document.getElementById('edit-website').value,
-            location: document.getElementById('edit-location').value
-        };
+        const email = document.getElementById('edit-email').value.trim();
 
         try {
-            const response = await fetch('/api/profile', {
+            setFormLoading('profile-edit-form', true);
+
+            const response = await makeAuthenticatedRequest('/api/profile', {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                body: JSON.stringify({ email })
             });
 
+            const data = await response.json();
+
             if (response.ok) {
-                statusDiv.textContent = 'Profile updated successfully!';
-                statusDiv.className = 'form-status success';
+                showMessage('Profile updated successfully!', 'success');
                 loadProfileData(); // Reload profile data
             } else {
-                throw new Error('Update failed');
+                showMessage(data.error || 'Failed to update profile', 'error');
             }
         } catch (error) {
-            statusDiv.textContent = 'Failed to update profile';
-            statusDiv.className = 'form-status error';
+            showMessage('Network error. Please try again.', 'error');
+        } finally {
+            setFormLoading('profile-edit-form', false);
         }
-
-        setTimeout(() => {
-            statusDiv.textContent = '';
-            statusDiv.className = 'form-status';
-        }, 3000);
     });
 }
 
 function setupPasswordChange() {
     const passwordForm = document.getElementById('password-change-form');
-    const statusDiv = document.getElementById('password-status');
 
     passwordForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -285,156 +230,112 @@ function setupPasswordChange() {
         const confirmPassword = document.getElementById('confirm-new-password').value;
 
         if (newPassword !== confirmPassword) {
-            statusDiv.textContent = 'New passwords do not match';
-            statusDiv.className = 'form-status error';
+            showMessage('New passwords do not match', 'error');
             return;
         }
 
         if (newPassword.length < 6) {
-            statusDiv.textContent = 'Password must be at least 6 characters';
-            statusDiv.className = 'form-status error';
+            showMessage('Password must be at least 6 characters', 'error');
             return;
         }
 
         try {
-            const response = await fetch('/api/profile/password', {
+            setFormLoading('password-change-form', true);
+
+            const response = await makeAuthenticatedRequest('/api/profile', {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ currentPassword, newPassword })
             });
 
+            const data = await response.json();
+
             if (response.ok) {
-                statusDiv.textContent = 'Password changed successfully!';
-                statusDiv.className = 'form-status success';
+                showMessage('Password changed successfully!', 'success');
                 passwordForm.reset();
             } else {
-                const data = await response.json();
-                throw new Error(data.error || 'Password change failed');
+                showMessage(data.error || 'Failed to change password', 'error');
             }
         } catch (error) {
-            statusDiv.textContent = error.message || 'Failed to change password';
-            statusDiv.className = 'form-status error';
-        }
-
-        setTimeout(() => {
-            statusDiv.textContent = '';
-            statusDiv.className = 'form-status';
-        }, 3000);
-    });
-}
-
-function setupAvatarEditing() {
-    const avatarEditBtn = document.getElementById('avatar-edit-btn');
-
-    avatarEditBtn.addEventListener('click', () => {
-        const newAvatarUrl = prompt('Enter new avatar image URL:', '');
-        if (newAvatarUrl && newAvatarUrl.trim()) {
-            updateAvatar(newAvatarUrl.trim());
+            showMessage('Network error. Please try again.', 'error');
+        } finally {
+            setFormLoading('password-change-form', false);
         }
     });
 }
 
-async function updateAvatar(avatarUrl) {
-    try {
-        const response = await fetch('/api/profile/avatar', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ avatar: avatarUrl })
-        });
+function setFormLoading(formId, loading) {
+    const form = document.getElementById(formId);
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const inputs = form.querySelectorAll('input');
 
-        if (response.ok) {
-            document.getElementById('profile-avatar').src = avatarUrl;
-            alert('Avatar updated successfully!');
-        } else {
-            throw new Error('Update failed');
-        }
-    } catch (error) {
-        alert('Failed to update avatar');
+    submitBtn.disabled = loading;
+    inputs.forEach(input => input.disabled = loading);
+
+    if (loading) {
+        submitBtn.innerHTML = '<span class="loading-spinner"></span> Saving...';
+    } else {
+        submitBtn.innerHTML = formId === 'profile-edit-form' ? 'Update Profile' : 'Change Password';
     }
 }
 
-function setupActivityFiltering() {
-    const filterButtons = document.querySelectorAll('.filter-btn');
-
-    filterButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const filter = button.getAttribute('data-filter');
-
-            // Update active button
-            filterButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-
-            // Filter activities
-            filterActivities(filter);
-        });
-    });
-}
-
-function filterActivities(filter) {
-    const activityItems = document.querySelectorAll('.activity-item');
-
-    activityItems.forEach(item => {
-        if (filter === 'all') {
-            item.style.display = 'flex';
-        } else {
-            // In a real app, you'd check the activity type
-            // For now, just show/hide randomly for demo
-            item.style.display = Math.random() > 0.5 ? 'flex' : 'none';
-        }
-    });
-}
-
-// Theme toggle functionality
-const themeToggle = document.getElementById('theme-toggle');
-if (themeToggle) {
-    themeToggle.addEventListener('click', toggleTheme);
-    // Load saved theme
-    const savedTheme = localStorage.getItem('siveal-theme');
-    const isLightTheme = savedTheme === 'light';
-    if (isLightTheme) {
-        document.body.classList.add('light-theme');
+function showMessage(text, type) {
+    // Create or update message element
+    let messageEl = document.getElementById('profile-message');
+    if (!messageEl) {
+        messageEl = document.createElement('div');
+        messageEl.id = 'profile-message';
+        messageEl.className = 'message';
+        document.querySelector('.container').insertBefore(messageEl, document.querySelector('.profile-content'));
     }
-    updateThemeIcon(isLightTheme);
-}
 
-function toggleTheme() {
-    document.body.classList.toggle('light-theme');
-    const isLightTheme = document.body.classList.contains('light-theme');
-    localStorage.setItem('siveal-theme', isLightTheme ? 'light' : 'dark');
-    updateThemeIcon(isLightTheme);
-}
+    messageEl.textContent = text;
+    messageEl.className = `message ${type}`;
+    messageEl.style.display = 'block';
 
-function updateThemeIcon(theme) {
-    const themeToggle = document.getElementById('theme-toggle');
-    if (!themeToggle) return;
-
-    const iconSVG = themeToggle.querySelector('svg');
-
-    // Theme icons
-    const themeIcons = {
-        'dark': `<path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"/>`,
-        'light': `<path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clip-rule="evenodd"/>`,
-        'high-contrast': `<circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m9.9 9.9l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42m9.9-9.9l1.42-1.42"/>`,
-        'dark': `<path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"/>`,
-        'light': `<path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clip-rule="evenodd"/>`,
-        'purple': `<circle cx="12" cy="12" r="5" fill="#8b5cf6"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m9.9 9.9l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42m9.9-9.9l1.42-1.42"/>`,
-        'green': `<circle cx="12" cy="12" r="5" fill="#10b981"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m9.9 9.9l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42m9.9-9.9l1.42-1.42"/>`
-    };
-
-    iconSVG.innerHTML = themeIcons[theme] || themeIcons['dark'];
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        messageEl.style.display = 'none';
+    }, 5000);
 }
 
 function goToAdminPanel() {
-    window.location.href = '/admin';
+    window.location.href = 'admin.html';
 }
 
-// Mobile menu
-const mobileToggle = document.getElementById('mobile-toggle');
-const navLinks = document.querySelector('.nav-links');
+// Add loading spinner styles
+const style = document.createElement('style');
+style.textContent = `
+    .loading-spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spin 1s ease-in-out infinite;
+        margin-right: 8px;
+    }
 
-if (mobileToggle && navLinks) {
-    mobileToggle.addEventListener('click', () => {
-        navLinks.classList.toggle('mobile-active');
-        mobileToggle.classList.toggle('active');
-    });
-}
+    .message {
+        padding: 12px;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 500;
+        margin-bottom: 20px;
+    }
+
+    .message.success {
+        background: #16a34a;
+        color: white;
+    }
+
+    .message.error {
+        background: #dc2626;
+        color: white;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+`;
+document.head.appendChild(style);
