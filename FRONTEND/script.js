@@ -265,7 +265,7 @@ async function initializeAuth() {
             // Immediately update UI with stored user data
             updateAuthUI(user);
 
-            // Then verify token with server in background (optional)
+            // Optional: Verify token in background without affecting login state
             try {
                 const response = await makeAuthenticatedRequest('/api/auth/status');
                 const data = await response.json();
@@ -275,15 +275,10 @@ async function initializeAuth() {
                     if (JSON.stringify(data.user) !== JSON.stringify(user)) {
                         updateAuthUI(data.user);
                     }
-                    return;
-                } else {
-                    // Token verification failed, but keep user logged in locally
-                    // Don't clear auth data to prevent logout due to network issues
-                    console.warn('Token verification failed, but keeping user logged in locally');
                 }
+                // If status check fails, ignore it - keep user logged in locally
             } catch (statusError) {
-                // If status check fails, keep the user logged in locally
-                // This prevents logout due to temporary network issues or backend problems
+                // Ignore all status check errors - never clear auth data
                 console.warn('Token verification failed, keeping user logged in locally:', statusError);
             }
         } else {
