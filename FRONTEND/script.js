@@ -13,6 +13,10 @@ const API_BASE_URL = window.location.hostname === 'localhost'
   ? 'http://localhost:3000'
   : (process.env.API_BASE_URL || 'https://siveal-backend.onrender.com');
 
+// Debug: Log API URL for troubleshooting
+console.log('API Base URL:', API_BASE_URL);
+console.log('Current hostname:', window.location.hostname);
+
 const translations = {
     en: {
         'nav-all': 'All',
