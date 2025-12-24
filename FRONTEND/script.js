@@ -435,6 +435,12 @@ function showNotification(message, type = 'info') {
 
 
 async function fetchNews() {
+    // Skip if news container doesn't exist (not on index page)
+    if (!document.getElementById('news-container')) {
+        console.log('News container not found, skipping fetchNews');
+        return;
+    }
+
     showLoadingState();
 
     try {

@@ -2,6 +2,11 @@
 let currentUser = null;
 let currentTab = 'overview';
 
+// API Base URL
+const API_BASE_URL = window.location.hostname === 'localhost'
+  ? 'http://localhost:3000'
+  : 'https://siveal-backend.onrender.com';
+
 // Authentication utilities
 function getAuthToken() {
     return localStorage.getItem('siveal_token');
@@ -30,7 +35,10 @@ function makeAuthenticatedRequest(url, options = {}) {
         throw new Error('No authentication token found');
     }
 
-    return fetch(url, {
+    // Ensure URL uses full API_BASE_URL
+    const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+
+    return fetch(fullUrl, {
         ...options,
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -63,6 +71,11 @@ async function checkAuth() {
         }
     } catch (error) {
         console.error('Auth check failed:', error);
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack,
+            url: `${API_BASE_URL}/api/auth/status`
+        });
         clearAuthData();
         redirectToLogin();
         return false;
@@ -93,7 +106,7 @@ function showProfileMenu() {
 
 async function logout() {
     try {
-        await fetch('/api/auth/logout', { method: 'POST' });
+        await fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST' });
     } catch (error) {
         console.error('Logout error:', error);
     }
@@ -183,7 +196,13 @@ async function loadProfileData() {
 
     } catch (error) {
         console.error('Error loading profile data:', error);
-        showMessage('Failed to load profile data', 'error');
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack,
+            url: `${API_BASE_URL}/api/profile`,
+            token: getAuthToken() ? 'EXISTS' : 'NOT FOUND'
+        });
+        showMessage('Failed to load profile data - check console for details', 'error');
     }
 }
 
