@@ -286,14 +286,26 @@ async function initializeAuth() {
 }
 
 function updateAuthUI(user) {
+    console.log('Updating auth UI for user:', user);
+
     // Remove existing login button if it exists
     const existingLoginBtn = document.getElementById('loginBtn');
     if (existingLoginBtn) {
+        console.log('Removing existing login button');
         existingLoginBtn.remove();
+    }
+
+    // Remove fallback login button if it exists
+    const fallbackBtn = document.getElementById('fallback-login-btn');
+    if (fallbackBtn) {
+        console.log('Hiding fallback login button');
+        fallbackBtn.style.display = 'none';
     }
 
     // Add user menu button to header actions
     const headerActions = document.querySelector('.header-actions');
+    console.log('Header actions element:', headerActions);
+
     if (headerActions) {
         const userBtn = document.createElement('button');
         userBtn.id = 'userBtn';
@@ -306,10 +318,13 @@ function updateAuthUI(user) {
         `;
         userBtn.onclick = showUserMenu;
 
+        console.log('Appending user button to header actions');
         headerActions.appendChild(userBtn);
 
         // Create user menu
         createUserMenu();
+    } else {
+        console.error('Header actions element not found!');
     }
 }
 
