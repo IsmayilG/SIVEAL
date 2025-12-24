@@ -294,27 +294,19 @@ function updateAuthUI(user) {
         fallbackBtn.style.display = 'none';
     }
 
-    // Add user menu button to header actions
+    // Add user button to header actions (same style as login button)
     const headerActions = document.querySelector('.header-actions');
     console.log('Header actions element:', headerActions);
 
     if (headerActions) {
-        const userBtn = document.createElement('button');
+        const userBtn = document.createElement('a');
         userBtn.id = 'userBtn';
-        userBtn.className = 'user-btn';
-        userBtn.innerHTML = `
-            <span class="user-name">${user.username}</span>
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M7 10l5 5 5-5z"/>
-            </svg>
-        `;
-        userBtn.onclick = showUserMenu;
+        userBtn.href = 'profile.html';
+        userBtn.className = 'login-btn'; // Use same class as login button for consistent styling
+        userBtn.textContent = user.username;
 
         console.log('Appending user button to header actions');
         headerActions.appendChild(userBtn);
-
-        // Create user menu
-        createUserMenu();
     } else {
         console.error('Header actions element not found!');
     }
