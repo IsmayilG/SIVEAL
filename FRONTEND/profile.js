@@ -53,6 +53,7 @@ async function checkAuth() {
     try {
         const token = getAuthToken();
         if (!token) {
+            console.error('No auth token found');
             redirectToLogin();
             return false;
         }
@@ -65,7 +66,8 @@ async function checkAuth() {
             updateHeaderLoginButton();
             return true;
         } else {
-            clearAuthData();
+            console.error('Auth status check failed:', { status: response.status, data });
+            // Don't clear auth data immediately - let user try again
             redirectToLogin();
             return false;
         }
@@ -74,9 +76,11 @@ async function checkAuth() {
         console.error('Error details:', {
             message: error.message,
             stack: error.stack,
-            url: `${API_BASE_URL}/api/auth/status`
+            url: `${API_BASE_URL}/api/auth/status`,
+            token: getAuthToken() ? 'EXISTS' : 'NOT FOUND'
         });
-        clearAuthData();
+        // Don't clear auth data on network errors - let user try again
+        // clearAuthData(); // Commented out to allow retry
         redirectToLogin();
         return false;
     }

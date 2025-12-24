@@ -466,6 +466,8 @@ async function fetchNews() {
 
 function showLoadingState() {
     const container = document.getElementById('news-container');
+    if (!container) return; // Skip if container doesn't exist (not on index page)
+
     container.innerHTML = `
         <div class="loading-state">
             <div class="loading-spinner"></div>
@@ -480,6 +482,8 @@ function hideLoadingState() {
 
 function showErrorState() {
     const container = document.getElementById('news-container');
+    if (!container) return; // Skip if container doesn't exist (not on index page)
+
     container.innerHTML = `
         <div class="error-state">
             <h3>Unable to load news</h3>
