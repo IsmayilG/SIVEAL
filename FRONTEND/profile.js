@@ -2,10 +2,11 @@
 let currentUser = null;
 let currentTab = 'overview';
 
-// API Base URL
-const API_BASE_URL = window.location.hostname === 'localhost'
-  ? 'http://localhost:3000'
-  : 'https://siveal-backend.onrender.com';
+// API Base URL - use existing one from script.js or define fallback
+const API_URL = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL :
+  (window.location.hostname === 'localhost'
+    ? 'http://localhost:3000'
+    : 'https://siveal-backend.onrender.com');
 
 // Authentication utilities
 function getAuthToken() {
@@ -35,8 +36,8 @@ function makeAuthenticatedRequest(url, options = {}) {
         throw new Error('No authentication token found');
     }
 
-    // Ensure URL uses full API_BASE_URL
-    const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+    // Ensure URL uses full API URL
+    const fullUrl = url.startsWith('http') ? url : `${API_URL}${url}`;
 
     return fetch(fullUrl, {
         ...options,
@@ -76,7 +77,7 @@ async function checkAuth() {
         console.error('Error details:', {
             message: error.message,
             stack: error.stack,
-            url: `${API_BASE_URL}/api/auth/status`,
+            url: `${API_URL}/api/auth/status`,
             token: getAuthToken() ? 'EXISTS' : 'NOT FOUND'
         });
         // Don't clear auth data on network errors - let user try again
@@ -110,7 +111,7 @@ function showProfileMenu() {
 
 async function logout() {
     try {
-        await fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST' });
+        await fetch(`${API_URL}/api/auth/logout`, { method: 'POST' });
     } catch (error) {
         console.error('Logout error:', error);
     }
@@ -203,7 +204,7 @@ async function loadProfileData() {
         console.error('Error details:', {
             message: error.message,
             stack: error.stack,
-            url: `${API_BASE_URL}/api/profile`,
+            url: `${API_URL}/api/profile`,
             token: getAuthToken() ? 'EXISTS' : 'NOT FOUND'
         });
         showMessage('Failed to load profile data - check console for details', 'error');
