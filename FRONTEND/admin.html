@@ -671,7 +671,27 @@
             const token = localStorage.getItem('jwtToken');
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             
-            if (!token || !user || user.role !== 'admin') {
+            // Debug logging
+            console.log('Admin Panel Security Check:');
+            console.log('Token:', token);
+            console.log('User object:', user);
+            console.log('User role:', user.role);
+            console.log('User role (lowercase):', user.role ? user.role.toLowerCase() : 'undefined');
+            
+            // Flexible role check (case-insensitive)
+            const hasValidToken = token && token.trim() !== '';
+            const hasValidUser = user && user.role;
+            const hasAdminRole = hasValidUser && user.role.toLowerCase() === 'admin';
+            
+            console.log('Has valid token:', hasValidToken);
+            console.log('Has valid user:', hasValidUser);
+            console.log('Has admin role:', hasAdminRole);
+            
+            if (!hasValidToken || !hasValidUser || !hasAdminRole) {
+                // Show alert with debug info
+                const roleInfo = hasValidUser ? user.role : 'No role found';
+                alert("Erişim Reddedildi! Rolünüz: " + roleInfo + "\n\nDebug Info:\nToken: " + (hasValidToken ? 'Present' : 'Missing') + "\nUser: " + (hasValidUser ? 'Valid' : 'Invalid'));
+                
                 document.body.style.display = 'none';
                 setTimeout(() => {
                     window.location.href = 'index.html';
@@ -681,6 +701,7 @@
 
             // Show content if authorized
             document.body.style.display = 'block';
+            console.log('Access granted - Admin panel loaded successfully!');
         })();
 
         // Admin functionality
