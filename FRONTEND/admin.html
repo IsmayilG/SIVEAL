@@ -766,7 +766,10 @@
                 console.log('Dashboard verileri yükleniyor...');
                 
                 // Load users count
-                const usersResponse = await makeAuthenticatedRequest('/users');
+                const usersResponse = await makeAuthenticatedRequest('/api/users');
+                if (!usersResponse.ok) {
+                    throw new Error(`Users API Error: ${usersResponse.status} ${usersResponse.statusText}`);
+                }
                 const usersData = await usersResponse.json();
                 console.log('Gelen Kullanıcılar:', usersData);
                 
@@ -777,7 +780,10 @@
                 users = usersList;
 
                 // Load articles count and data
-                const articlesResponse = await makeAuthenticatedRequest('/articles');
+                const articlesResponse = await makeAuthenticatedRequest('/api/articles');
+                if (!articlesResponse.ok) {
+                    throw new Error(`Articles API Error: ${articlesResponse.status} ${articlesResponse.statusText}`);
+                }
                 const articlesData = await articlesResponse.json();
                 console.log('Gelen Makaleler:', articlesData);
                 
@@ -842,17 +848,16 @@
 
         async function loadArticles() {
             try {
-                const response = await makeAuthenticatedRequest('/articles');
+                const response = await makeAuthenticatedRequest('/api/articles');
+                if (!response.ok) {
+                    throw new Error(`Articles API Error: ${response.status} ${response.statusText}`);
+                }
                 const data = await response.json();
                 console.log('Gelen Makaleler (Articles Tab):', data);
 
-                if (response.ok) {
-                    // Smart parsing for articles data
-                    articles = Array.isArray(data) ? data : (data.data || data.articles || data.result || []);
-                    renderArticlesTable();
-                } else {
-                    throw new Error(data.error || 'Failed to load articles');
-                }
+                // Smart parsing for articles data
+                articles = Array.isArray(data) ? data : (data.data || data.articles || data.result || []);
+                renderArticlesTable();
             } catch (error) {
                 console.error('ARTICLES LOAD HATASI:', error);
                 safeShowMessage('Failed to load articles', 'error');
@@ -861,17 +866,16 @@
 
         async function loadUsers() {
             try {
-                const response = await makeAuthenticatedRequest('/users');
+                const response = await makeAuthenticatedRequest('/api/users');
+                if (!response.ok) {
+                    throw new Error(`Users API Error: ${response.status} ${response.statusText}`);
+                }
                 const data = await response.json();
                 console.log('Gelen Kullanıcılar (Users Tab):', data);
 
-                if (response.ok) {
-                    // Smart parsing for users data
-                    users = Array.isArray(data) ? data : (data.data || data.users || data.result || []);
-                    renderUsersTable();
-                } else {
-                    throw new Error(data.error || 'Failed to load users');
-                }
+                // Smart parsing for users data
+                users = Array.isArray(data) ? data : (data.data || data.users || data.result || []);
+                renderUsersTable();
             } catch (error) {
                 console.error('USERS LOAD HATASI:', error);
                 safeShowMessage('Failed to load users', 'error');
