@@ -1,39 +1,98 @@
-// Global variables
+// ==========================================
+// DEFENSIVE CODING - PROFILE.JS
+// Tüm DOM erişimleri güvenli, hiçbir çökme olmayacak
+// ==========================================
+
+// Global değişkenler - güvenli başlatma
 let currentUser = null;
 let currentTab = 'overview';
 
-// API Base URL - use global variable from window
-const API_URL = window.API_BASE_URL;
+// API URL - window objesinden al, çakışma önle
+const API_URL = window.API_BASE_URL || 'http://localhost:3000';
 
-// Authentication utilities
+// ==========================================
+// GÜVENLİ YARDIMCI FONKSİYONLAR
+// ==========================================
+
+// Güvenli element seçimi - null dönerse hiçbir şey yapma
+function safeGetElement(id) {
+    try {
+        return document.getElementById(id);
+    } catch (e) {
+        console.warn(`UYARI: Element '${id}' seçilirken hata:`, e);
+        return null;
+    }
+}
+
+// Güvenli element güncelleme - element yoksa sessizce geç
+function safeUpdateElement(id, property, value) {
+    const el = safeGetElement(id);
+    if (el && el[property] !== undefined) {
+        try {
+            el[property] = value;
+        } catch (e) {
+            console.warn(`UYARI: Element '${id}' güncellenirken hata:`, e);
+        }
+    } else if (!el) {
+        console.warn(`UYARI: Element '${id}' bulunamadı, güncelleme atlandı`);
+    }
+}
+
+// Güvenli event listener ekleme
+function safeAddEventListener(id, event, handler) {
+    const el = safeGetElement(id);
+    if (el) {
+        try {
+            el.addEventListener(event, handler);
+        } catch (e) {
+            console.warn(`UYARI: Element '${id}' için event listener eklenirken hata:`, e);
+        }
+    } else {
+        console.warn(`UYARI: Element '${id}' bulunamadı, event listener eklenemedi`);
+    }
+}
+
+// ==========================================
+// AUTH YARDIMCI FONKSİYONLAR
+// ==========================================
+
 function getAuthToken() {
-    return localStorage.getItem('siveal_token');
+    try {
+        return localStorage.getItem('siveal_token');
+    } catch (e) {
+        console.warn('UYARI: localStorage token okunurken hata:', e);
+        return null;
+    }
 }
 
 function getCurrentUser() {
-    const userData = localStorage.getItem('siveal_user');
-    return userData ? JSON.parse(userData) : null;
-}
-
-function setAuthData(token, user) {
-    localStorage.setItem('siveal_token', token);
-    localStorage.setItem('siveal_user', JSON.stringify(user));
-    currentUser = user;
+    try {
+        const userData = localStorage.getItem('siveal_user');
+        return userData ? JSON.parse(userData) : null;
+    } catch (e) {
+        console.warn('UYARI: localStorage user okunurken hata:', e);
+        return null;
+    }
 }
 
 function clearAuthData() {
-    localStorage.removeItem('siveal_token');
-    localStorage.removeItem('siveal_user');
-    currentUser = null;
+    try {
+        localStorage.removeItem('siveal_token');
+        localStorage.removeItem('siveal_user');
+        currentUser = null;
+    } catch (e) {
+        console.warn('UYARI: localStorage temizlenirken hata:', e);
+    }
 }
 
+// Güvenli API isteği
 function makeAuthenticatedRequest(url, options = {}) {
     const token = getAuthToken();
     if (!token) {
+        console.warn('UYARI: Auth token bulunamadı');
         throw new Error('No authentication token found');
     }
 
-    // Ensure URL uses full API URL
     const fullUrl = url.startsWith('http') ? url : `${API_URL}${url}`;
 
     return fetch(fullUrl, {
@@ -46,12 +105,15 @@ function makeAuthenticatedRequest(url, options = {}) {
     });
 }
 
-// Check authentication on page load
+// ==========================================
+// AUTH ANA FONKSİYONLAR
+// ==========================================
+
 async function checkAuth() {
     try {
         const token = getAuthToken();
         if (!token) {
-            console.error('No auth token found');
+            console.warn('UYARI: Auth token yok, login sayfasına yönlendiriliyor');
             redirectToLogin();
             return false;
         }
@@ -62,41 +124,47 @@ async function checkAuth() {
         if (response.ok && data.isLoggedIn) {
             currentUser = data.user;
             updateHeaderLoginButton();
+            console.log('AUTH BAŞARILI: Kullanıcı giriş yapmış');
             return true;
         } else {
-            console.error('Auth status check failed:', { status: response.status, data });
-            // Don't clear auth data immediately - let user try again
+            console.warn('UYARI: Auth status başarısız:', { status: response.status, data });
             redirectToLogin();
             return false;
         }
     } catch (error) {
-        console.error('Auth check failed:', error);
+        console.error('AUTH HATASI:', error);
         console.error('Error details:', {
             message: error.message,
             stack: error.stack,
             url: `${API_URL}/api/auth/status`,
             token: getAuthToken() ? 'EXISTS' : 'NOT FOUND'
         });
-        // Don't clear auth data on network errors - let user try again
-        // clearAuthData(); // Commented out to allow retry
         redirectToLogin();
         return false;
     }
 }
 
 function redirectToLogin() {
-    window.location.href = 'login.html';
+    try {
+        window.location.href = 'login.html';
+    } catch (e) {
+        console.warn('UYARI: Login sayfasına yönlendirme başarısız:', e);
+    }
 }
 
 function updateHeaderLoginButton() {
-    const loginBtn = document.getElementById('loginBtn');
+    const loginBtn = safeGetElement('loginBtn');
     if (loginBtn && currentUser) {
-        loginBtn.textContent = currentUser.username;
-        loginBtn.href = '#';
-        loginBtn.onclick = (e) => {
-            e.preventDefault();
-            showProfileMenu();
-        };
+        try {
+            loginBtn.textContent = currentUser.username;
+            loginBtn.href = '#';
+            loginBtn.onclick = (e) => {
+                e.preventDefault();
+                showProfileMenu();
+            };
+        } catch (e) {
+            console.warn('UYARI: Header login button güncellenirken hata:', e);
+        }
     }
 }
 
@@ -109,16 +177,21 @@ function showProfileMenu() {
 async function logout() {
     try {
         await fetch(`${API_URL}/api/auth/logout`, { method: 'POST' });
+        console.log('LOGOUT BAŞARILI');
     } catch (error) {
-        console.error('Logout error:', error);
+        console.warn('UYARI: Logout isteği başarısız:', error);
     }
 
     clearAuthData();
-    window.location.href = 'index.html';
+    redirectToLogin();
 }
 
-// Profile management
+// ==========================================
+// DOM YÖNETİMİ - TAM GÜVENLİ
+// ==========================================
+
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log('PROFILE SAYFASI YÜKLENDİ');
     const isAuthenticated = await checkAuth();
     if (!isAuthenticated) return;
 
@@ -129,32 +202,58 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function setupTabNavigation() {
-    const tabButtons = document.querySelectorAll('.profile-nav-btn');
+    try {
+        const tabButtons = document.querySelectorAll('.profile-nav-btn');
+        if (tabButtons.length === 0) {
+            console.warn('UYARI: Tab butonları bulunamadı');
+            return;
+        }
 
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const tabName = button.getAttribute('data-tab');
-            switchTab(tabName);
-
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
+        tabButtons.forEach(button => {
+            if (button) {
+                button.addEventListener('click', () => {
+                    const tabName = button.getAttribute('data-tab');
+                    if (tabName) {
+                        switchTab(tabName);
+                        // Aktif tabı güncelle
+                        tabButtons.forEach(btn => {
+                            if (btn) btn.classList.remove('active');
+                        });
+                        button.classList.add('active');
+                    }
+                });
+            }
         });
-    });
+    } catch (e) {
+        console.warn('UYARI: Tab navigation kurulurken hata:', e);
+    }
 }
 
 function switchTab(tabName) {
+    if (!tabName) return;
+
     currentTab = tabName;
 
-    const tabs = document.querySelectorAll('.profile-tab');
-    tabs.forEach(tab => tab.classList.remove('active'));
+    try {
+        // Tüm tabları gizle
+        const tabs = document.querySelectorAll('.profile-tab');
+        tabs.forEach(tab => {
+            if (tab) tab.classList.remove('active');
+        });
 
-    const selectedTab = document.getElementById(`${tabName}-tab`);
-    if (selectedTab) {
-        selectedTab.classList.add('active');
+        // Seçilen tabı göster
+        const selectedTab = safeGetElement(`${tabName}-tab`);
+        if (selectedTab) {
+            selectedTab.classList.add('active');
 
-        if (tabName === 'admin' && currentUser?.role === 'admin') {
-            loadAdminDashboard();
+            if (tabName === 'admin' && currentUser?.role === 'admin') {
+                loadAdminDashboard();
+            }
+        } else {
+            console.warn(`UYARI: Tab '${tabName}' bulunamadı`);
         }
+    } catch (e) {
+        console.warn('UYARI: Tab değiştirirken hata:', e);
     }
 }
 
@@ -163,291 +262,298 @@ async function loadAdminDashboard() {
         const response = await makeAuthenticatedRequest('/api/admin/stats');
         const stats = await response.json();
 
-        // Safe element access for admin stats
-        const articlesEl = document.getElementById('total-articles');
-        if (articlesEl) articlesEl.textContent = stats.totalArticles || '0';
+        // Güvenli element güncellemeleri
+        safeUpdateElement('total-articles', 'textContent', stats.totalArticles || '0');
+        safeUpdateElement('total-users', 'textContent', stats.totalUsers || '0');
+        safeUpdateElement('total-views', 'textContent', (stats.totalViews || 0).toLocaleString());
 
-        const usersEl = document.getElementById('total-users');
-        if (usersEl) usersEl.textContent = stats.totalUsers || '0';
-
-        const viewsEl = document.getElementById('total-views');
-        if (viewsEl) viewsEl.textContent = (stats.totalViews || 0).toLocaleString();
-
-        // Show admin navigation
-        const adminNavBtn = document.getElementById('admin-nav-btn');
-        if (adminNavBtn) adminNavBtn.style.display = 'block';
+        // Admin navigation göster
+        const adminNavBtn = safeGetElement('admin-nav-btn');
+        if (adminNavBtn) {
+            adminNavBtn.style.display = 'block';
+        }
     } catch (error) {
-        console.error('Error loading admin dashboard:', error);
-        showMessage('Failed to load admin data', 'error');
+        console.error('ADMIN DASHBOARD HATASI:', error);
+        safeShowMessage('Failed to load admin data', 'error');
     }
 }
 
 async function loadProfileData() {
     try {
+        console.log('PROFİL VERİSİ YÜKLENİYOR...');
         const response = await makeAuthenticatedRequest('/api/profile');
         const profileData = await response.json();
 
-        // SAFE DOM ACCESS - Check each element before setting
-        // Looking for: profile-name, profile-email, profile-role, profile-joined, profile-last-login
+        console.log('PROFİL VERİSİ ALINDI:', profileData);
 
-        const nameEl = document.getElementById('profile-name');
-        if (nameEl) {
-            nameEl.textContent = profileData.username;
-        } else {
-            console.warn('UYARI: profile-name elementi HTML\'de bulunamadı!');
-        }
+        // DEFENSIVE CODING - Her element için güvenli güncelleme
+        // HTML'de VAR olan elementler: profile-name, profile-email, profile-role, profile-joined
+        safeUpdateElement('profile-name', 'textContent', profileData.username || 'N/A');
+        safeUpdateElement('profile-email', 'textContent', profileData.email || 'N/A');
+        safeUpdateElement('profile-role', 'textContent', profileData.role === 'admin' ? 'Administrator' : 'Member');
+        safeUpdateElement('profile-joined', 'textContent', `Joined: ${new Date(profileData.createdAt).toLocaleDateString()}`);
 
-        const emailEl = document.getElementById('profile-email');
-        if (emailEl) {
-            emailEl.textContent = profileData.email;
-        } else {
-            console.warn('UYARI: profile-email elementi HTML\'de bulunamadı!');
-        }
+        // HTML'de YOK olan elementler - sessizce atla
+        // safeUpdateElement('profile-last-login', 'textContent', 'N/A'); // Bu element yok
+        // safeUpdateElement('edit-email', 'value', profileData.email || ''); // Bu element yok
 
-        const roleEl = document.getElementById('profile-role');
-        if (roleEl) {
-            roleEl.textContent = profileData.role === 'admin' ? 'Administrator' : 'Member';
-        } else {
-            console.warn('UYARI: profile-role elementi HTML\'de bulunamadı!');
-        }
+        // Edit form için var olan elementi güncelle
+        safeUpdateElement('edit-display-name', 'value', profileData.username || '');
 
-        const joinedEl = document.getElementById('profile-joined');
-        if (joinedEl) {
-            joinedEl.textContent = `Joined: ${new Date(profileData.createdAt).toLocaleDateString()}`;
-        } else {
-            console.warn('UYARI: profile-joined elementi HTML\'de bulunamadı!');
-        }
-
-        // profile-last-login element does not exist in HTML, skip safely
-        // const lastLoginEl = document.getElementById('profile-last-login');
-        // if (lastLoginEl) {
-        //     lastLoginEl.textContent = profileData.lastLogin ?
-        //         `Last Login: ${new Date(profileData.lastLogin).toLocaleDateString()}` : 'Last Login: Never';
-        // } else {
-        //     console.warn('UYARI: profile-last-login elementi HTML\'de bulunamadı!');
-        // }
-
-        // Safe access for edit form - looking for edit-display-name (not edit-email)
-        const editNameEl = document.getElementById('edit-display-name');
-        if (editNameEl) {
-            editNameEl.value = profileData.username || '';
-        } else {
-            console.warn('UYARI: edit-display-name elementi HTML\'de bulunamadı!');
-        }
-
-        // Show admin tab if user is admin
+        // Admin tab göster (eğer admin ise)
         if (currentUser?.role === 'admin') {
             const adminTab = document.querySelector('[data-tab="admin"]');
             if (adminTab) {
                 adminTab.style.display = 'block';
-            } else {
-                console.warn('UYARI: admin tab elementi HTML\'de bulunamadı!');
             }
         }
 
+        console.log('PROFİL VERİSİ BAŞARIYLA GÜNCELLENDİ');
+
     } catch (error) {
-        console.error('Error loading profile data:', error);
+        console.error('PROFİL VERİSİ YÜKLEME HATASI:', error);
         console.error('Error details:', {
             message: error.message,
             stack: error.stack,
             url: `${API_URL}/api/profile`,
             token: getAuthToken() ? 'EXISTS' : 'NOT FOUND'
         });
-        showMessage('Failed to load profile data - check console for details', 'error');
+        safeShowMessage('Failed to load profile data - check console for details', 'error');
     }
 }
 
 function setupProfileEditing() {
-    const editForm = document.getElementById('profile-edit-form');
-
-    if (editForm) {
-        editForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const displayName = document.getElementById('edit-display-name')?.value || '';
-            const bio = document.getElementById('edit-bio')?.value || '';
-            const website = document.getElementById('edit-website')?.value || '';
-            const location = document.getElementById('edit-location')?.value || '';
-
-            try {
-                setFormLoading('profile-edit-form', true);
-
-                const response = await makeAuthenticatedRequest('/api/profile', {
-                    method: 'PUT',
-                    body: JSON.stringify({ displayName, bio, website, location })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    showMessage('Profile updated successfully!', 'success');
-                    loadProfileData(); // Reload profile data
-                } else {
-                    showMessage(data.error || 'Failed to update profile', 'error');
-                }
-            } catch (error) {
-                showMessage('Network error. Please try again.', 'error');
-            } finally {
-                setFormLoading('profile-edit-form', false);
-            }
-        });
-    } else {
-        console.warn('UYARI: profile-edit-form elementi HTML\'de bulunamadı!');
-    }
-}
-
-function setupPasswordChange() {
-    const passwordForm = document.getElementById('password-change-form');
-
-    if (passwordForm) {
-        passwordForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const currentPassword = document.getElementById('current-password')?.value || '';
-            const newPassword = document.getElementById('new-password')?.value || '';
-            const confirmPassword = document.getElementById('confirm-new-password')?.value || '';
-
-            if (newPassword !== confirmPassword) {
-                showMessage('New passwords do not match', 'error');
-                return;
-            }
-
-            if (newPassword.length < 6) {
-                showMessage('Password must be at least 6 characters', 'error');
-                return;
-            }
-
-            try {
-                setFormLoading('password-change-form', true);
-
-                const response = await makeAuthenticatedRequest('/api/profile', {
-                    method: 'PUT',
-                    body: JSON.stringify({ currentPassword, newPassword })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    showMessage('Password changed successfully!', 'success');
-                    passwordForm.reset();
-                } else {
-                    showMessage(data.error || 'Failed to change password', 'error');
-                }
-            } catch (error) {
-                showMessage('Network error. Please try again.', 'error');
-            } finally {
-                setFormLoading('password-change-form', false);
-            }
-        });
-    } else {
-        console.warn('UYARI: password-change-form elementi HTML\'de bulunamadı!');
-    }
-}
-
-function setFormLoading(formId, loading) {
-    const form = document.getElementById(formId);
-    if (!form) {
-        console.warn(`UYARI: ${formId} form elementi HTML'de bulunamadı!`);
+    const editForm = safeGetElement('profile-edit-form');
+    if (!editForm) {
+        console.warn('UYARI: Profile edit form bulunamadı');
         return;
     }
 
-    const submitBtn = form.querySelector('button[type="submit"]');
-    const inputs = form.querySelectorAll('input');
+    safeAddEventListener('profile-edit-form', 'submit', async (e) => {
+        e.preventDefault();
 
-    if (submitBtn) {
-        submitBtn.disabled = loading;
+        // Form değerlerini güvenli oku
+        const displayName = safeGetElement('edit-display-name')?.value || '';
+        const bio = safeGetElement('edit-bio')?.value || '';
+        const website = safeGetElement('edit-website')?.value || '';
+        const location = safeGetElement('edit-location')?.value || '';
+
+        try {
+            setFormLoading('profile-edit-form', true);
+
+            const response = await makeAuthenticatedRequest('/api/profile', {
+                method: 'PUT',
+                body: JSON.stringify({ displayName, bio, website, location })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                safeShowMessage('Profile updated successfully!', 'success');
+                loadProfileData(); // Reload profile data
+            } else {
+                safeShowMessage(data.error || 'Failed to update profile', 'error');
+            }
+        } catch (error) {
+            console.error('PROFILE UPDATE HATASI:', error);
+            safeShowMessage('Network error. Please try again.', 'error');
+        } finally {
+            setFormLoading('profile-edit-form', false);
+        }
+    });
+}
+
+function setupPasswordChange() {
+    const passwordForm = safeGetElement('password-change-form');
+    if (!passwordForm) {
+        console.warn('UYARI: Password change form bulunamadı');
+        return;
     }
 
-    inputs.forEach(input => {
-        if (input) input.disabled = loading;
-    });
+    safeAddEventListener('password-change-form', 'submit', async (e) => {
+        e.preventDefault();
 
-    if (submitBtn && loading) {
-        submitBtn.innerHTML = '<span class="loading-spinner"></span> Saving...';
-    } else if (submitBtn) {
-        submitBtn.innerHTML = formId === 'profile-edit-form' ? 'Update Profile' : 'Change Password';
+        // Form değerlerini güvenli oku
+        const currentPassword = safeGetElement('current-password')?.value || '';
+        const newPassword = safeGetElement('new-password')?.value || '';
+        const confirmPassword = safeGetElement('confirm-new-password')?.value || '';
+
+        if (newPassword !== confirmPassword) {
+            safeShowMessage('New passwords do not match', 'error');
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            safeShowMessage('Password must be at least 6 characters', 'error');
+            return;
+        }
+
+        try {
+            setFormLoading('password-change-form', true);
+
+            const response = await makeAuthenticatedRequest('/api/profile', {
+                method: 'PUT',
+                body: JSON.stringify({ currentPassword, newPassword })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                safeShowMessage('Password changed successfully!', 'success');
+                // Formu sıfırla
+                const form = safeGetElement('password-change-form');
+                if (form && form.reset) {
+                    form.reset();
+                }
+            } else {
+                safeShowMessage(data.error || 'Failed to change password', 'error');
+            }
+        } catch (error) {
+            console.error('PASSWORD CHANGE HATASI:', error);
+            safeShowMessage('Network error. Please try again.', 'error');
+        } finally {
+            setFormLoading('password-change-form', false);
+        }
+    });
+}
+
+function setFormLoading(formId, loading) {
+    const form = safeGetElement(formId);
+    if (!form) {
+        console.warn(`UYARI: Form '${formId}' bulunamadı`);
+        return;
+    }
+
+    try {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const inputs = form.querySelectorAll('input');
+
+        if (submitBtn) {
+            submitBtn.disabled = loading;
+        }
+
+        inputs.forEach(input => {
+            if (input) input.disabled = loading;
+        });
+
+        if (submitBtn && loading) {
+            submitBtn.innerHTML = '<span class="loading-spinner"></span> Saving...';
+        } else if (submitBtn) {
+            submitBtn.innerHTML = formId === 'profile-edit-form' ? 'Update Profile' : 'Change Password';
+        }
+    } catch (e) {
+        console.warn(`UYARI: Form '${formId}' loading state güncellenirken hata:`, e);
     }
 }
 
-function showMessage(text, type) {
-    // Create or update message element
-    let messageEl = document.getElementById('profile-message');
-    if (!messageEl) {
-        messageEl = document.createElement('div');
-        messageEl.id = 'profile-message';
-        messageEl.className = 'message';
+// GÜVENLİ mesaj gösterimi - hiçbir zaman çökmeyecek
+function safeShowMessage(text, type) {
+    if (!text) return;
 
-        // Try to find the proper container for the message
-        const container = document.querySelector('.container');
-        const profileContent = document.querySelector('.profile-content');
+    try {
+        // Mevcut mesaj elementini bul veya oluştur
+        let messageEl = safeGetElement('profile-message');
+        if (!messageEl) {
+            messageEl = document.createElement('div');
+            messageEl.id = 'profile-message';
+            messageEl.className = 'message';
 
-        if (container && profileContent) {
-            // Insert before profile content if both exist
-            try {
-                container.insertBefore(messageEl, profileContent);
-            } catch (e) {
-                console.warn('UYARI: insertBefore başarısız, fallback kullanıyorum:', e);
+            // Container'ı bulmaya çalış
+            const container = document.querySelector('.container');
+            const profileContent = document.querySelector('.profile-content');
+
+            if (container && profileContent) {
+                // Güvenli insert
+                try {
+                    container.insertBefore(messageEl, profileContent);
+                } catch (insertError) {
+                    console.warn('UYARI: insertBefore başarısız, fallback kullanıyorum:', insertError);
+                    document.body.appendChild(messageEl);
+                }
+            } else {
+                // Fallback - doğrudan body'ye ekle
+                console.warn('UYARI: Container bulunamadı, mesaj document.body\'ye eklenecek');
                 document.body.appendChild(messageEl);
             }
-        } else {
-            // Fallback: append to body
-            console.warn('UYARI: Container bulunamadı, mesaj document.body\'ye eklenecek');
-            document.body.appendChild(messageEl);
         }
-    }
 
-    if (messageEl) {
-        messageEl.textContent = text;
-        messageEl.className = `message ${type}`;
-        messageEl.style.display = 'block';
+        // Mesajı güncelle
+        if (messageEl) {
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            messageEl.style.display = 'block';
 
-        // Auto-hide after 5 seconds
-        setTimeout(() => {
-            if (messageEl) {
-                messageEl.style.display = 'none';
-            }
-        }, 5000);
+            // 5 saniye sonra gizle
+            setTimeout(() => {
+                if (messageEl) {
+                    messageEl.style.display = 'none';
+                }
+            }, 5000);
+        }
+    } catch (e) {
+        console.warn('UYARI: Mesaj gösterilirken hata:', e);
+        // En son fallback - console'a yaz
+        console.log('MESSAGE:', text, `(${type})`);
     }
 }
 
 function goToAdminPanel() {
-    window.location.href = 'admin.html';
+    try {
+        window.location.href = 'admin.html';
+    } catch (e) {
+        console.warn('UYARI: Admin paneline yönlendirme başarısız:', e);
+    }
 }
 
-// Add loading spinner styles
-const style = document.createElement('style');
-style.textContent = `
-    .loading-spinner {
-        display: inline-block;
-        width: 16px;
-        height: 16px;
-        border: 2px solid #e2e8f0;
-        border-radius: 50%;
-        border-top-color: transparent;
-        animation: spin 1s ease-in-out infinite;
-        margin-right: 8px;
-    }
+// ==========================================
+// CSS STilleri - Güvenli ekleme
+// ==========================================
 
-    .message {
-        padding: 12px;
-        border-radius: 8px;
-        text-align: center;
-        font-weight: 500;
-        margin-bottom: 20px;
-    }
+try {
+    const style = document.createElement('style');
+    style.textContent = `
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
 
-    .message.success {
-        background: #16a34a;
-        color: white;
-    }
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            margin-bottom: 20px;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            min-width: 300px;
+        }
 
-    .message.error {
-        background: #dc2626;
-        color: white;
-    }
+        .message.success {
+            background: #16a34a;
+            color: white;
+        }
 
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-`;
-document.head.appendChild(style);
+        .message.error {
+            background: #dc2626;
+            color: white;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    `;
+    document.head.appendChild(style);
+} catch (e) {
+    console.warn('UYARI: CSS stilleri eklenirken hata:', e);
+}
+
+console.log('PROFILE.JS YÜKLENDİ - Tüm fonksiyonlar güvenli');
