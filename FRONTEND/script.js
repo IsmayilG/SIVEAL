@@ -821,7 +821,9 @@ function showSearchResults(query) {
 
 function hideSearchResults() {
     const searchResults = document.getElementById('search-results');
-    searchResults.classList.remove('show');
+    if (searchResults) {
+        searchResults.classList.remove('show');
+    }
 }
 
 function navigateToArticle(articleId) {
