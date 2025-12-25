@@ -327,16 +327,21 @@ async function loadProfileData() {
         if (logoutBtnTop) {
             logoutBtnTop.addEventListener('click', function() {
                 localStorage.clear();
+                sessionStorage.clear();
                 alert('Çıkış yapıldı!');
-                window.location.href = 'index.html';
+                window.location.href = 'login.html';
             });
         }
 
         // Kesin çözüm: Direkt onclick atama
-        document.getElementById('logout-btn-top').onclick = function() {
-            localStorage.clear();
-            window.location.href = 'index.html'; // Giriş sayfasına yönlendir
-        };
+        const logoutBtnTopDirect = document.getElementById('logout-btn-top');
+        if (logoutBtnTopDirect) {
+            logoutBtnTopDirect.onclick = function() {
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = 'login.html'; // Giriş sayfasına yönlendir
+            };
+        }
 
         console.log('PROFİL VERİSİ BAŞARIYLA GÜNCELLENDİ');
 
