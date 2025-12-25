@@ -388,6 +388,9 @@ header {
 }
 
 .search-input {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 0;
     opacity: 0;
     padding: 8px 12px;
@@ -400,6 +403,7 @@ header {
     outline: none;
     transition: all 0.3s ease;
     margin-right: -32px;
+    z-index: 2;
 }
 
 .search-input.active {
@@ -2308,19 +2312,20 @@ footer {
     overflow: hidden;
     border: 1px solid var(--border);
     margin-left: 10px;
-    gap: 2px;
+    gap: 0;
 }
 
 .lang-btn {
     background: none;
     border: none;
     color: var(--text-muted);
-    padding: 6px 12px;
+    padding: 6px 10px;
     cursor: pointer;
     font-size: 0.8rem;
     font-weight: 600;
     transition: all 0.2s;
-    min-width: 32px;
+    min-width: 28px;
+    width: 28px;
 }
 
 .lang-btn:hover {
@@ -2336,12 +2341,13 @@ footer {
 @media (max-width: 768px) {
     .language-selector {
         font-size: 0.7rem;
-        padding: 4px 8px;
+        padding: 4px 6px;
     }
     
     .lang-btn {
-        padding: 4px 8px;
-        min-width: 28px;
+        padding: 4px 6px;
+        min-width: 24px;
+        width: 24px;
     }
 }
 
