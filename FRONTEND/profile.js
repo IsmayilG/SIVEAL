@@ -2,10 +2,8 @@
 let currentUser = null;
 let currentTab = 'overview';
 
-// API Base URL - use global variable from window to avoid conflicts
-const API_URL = window.API_BASE_URL || (window.location.hostname === 'localhost'
-  ? 'http://localhost:3000'
-  : 'https://siveal-backend.onrender.com');
+// API Base URL - use global variable from window
+const API_URL = window.API_BASE_URL;
 
 // Authentication utilities
 function getAuthToken() {

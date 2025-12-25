@@ -9,9 +9,11 @@ let carouselSlides = [];
 let currentLanguage = localStorage.getItem('siveal-language') || 'en';
 
 // API Base URL - Global variable to avoid conflicts
-window.API_BASE_URL = window.location.hostname === 'localhost'
-  ? 'http://localhost:3000'
-  : 'https://siveal-backend.onrender.com';
+if (!window.API_BASE_URL) {
+    window.API_BASE_URL = window.location.hostname === 'localhost'
+        ? 'http://localhost:3000'
+        : 'https://siveal-backend.onrender.com';
+}
 
 // Debug: Log API URL for troubleshooting
 console.log('API Base URL:', API_BASE_URL);
@@ -290,17 +292,20 @@ function updateAuthUI(user) {
 
     console.log('Created user button:', userBtn);
 
-    // Nükleer yöntem: header-actions div'inin içini tamamen temizle ve yeni butonu ekle
-    const headerActions = document.querySelector('.header-actions');
-    console.log('Header actions element:', headerActions);
+    // Find existing login button and replace it (don't clear entire header-actions)
+    const existingBtn = document.getElementById('loginBtn') || document.getElementById('fallback-login-btn');
 
-    if (headerActions) {
-        console.log('Clearing header actions and adding user button');
-        headerActions.innerHTML = ''; // Tüm içeriği temizle
-        headerActions.appendChild(userBtn); // Sadece yeni user butonunu ekle
-        console.log('User button added successfully');
+    if (existingBtn) {
+        console.log('Replacing existing login button with user button');
+        existingBtn.replaceWith(userBtn);
+        console.log('User button replaced successfully');
     } else {
-        console.error('Header actions element not found!');
+        console.error('No existing login button found to replace!');
+        // Fallback: append to header actions
+        const headerActions = document.querySelector('.header-actions');
+        if (headerActions) {
+            headerActions.appendChild(userBtn);
+        }
     }
 }
 
