@@ -823,6 +823,28 @@
             }
         }
 
+        async function loadUsersData() {
+            try {
+                const response = await makeAuthenticatedRequest('/api/users');
+                if (!response.ok) {
+                    throw new Error(`Users API Error: ${response.status} ${response.statusText}`);
+                }
+                const usersData = await response.json();
+                console.log('Gelen Kullanıcılar:', usersData);
+                
+                // Smart parsing for users data
+                const usersList = Array.isArray(usersData) ? usersData : (usersData.data || usersData.users || usersData.result || []);
+                const usersCount = usersList.length || 0;
+                safeUpdateElement('stat-total-users', 'textContent', usersCount.toString());
+                users = usersList;
+                renderUsersTable();
+                return usersList;
+            } catch (error) {
+                console.error('USERS LOAD HATASI:', error);
+                throw error;
+            }
+        }
+
         // ==========================================
         // TAB MANAGEMENT FUNCTIONS
         // ==========================================
@@ -1174,6 +1196,15 @@
                 `;
                 testBtn.onclick = testAPIEndpoints;
                 dashboardHeader.appendChild(testBtn);
+            }
+
+            // Logout button event listener (Kesin çözüm)
+            const logoutBtn = document.getElementById('logout-btn-top');
+            if (logoutBtn) {
+                logoutBtn.onclick = () => { 
+                    localStorage.clear(); 
+                    window.location.href = 'login.html'; 
+                };
             }
         });
     </script>

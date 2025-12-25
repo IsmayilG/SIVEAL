@@ -482,6 +482,23 @@ app.get('/api/admin/stats', authenticateToken, (req, res) => {
     }
 });
 
+// Admin users list endpoint
+app.get('/api/users', authenticateToken, (req, res) => {
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    try {
+        const usersPath = path.join(__dirname, 'data', 'users.json');
+        const users = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
+        const safeUsers = users.map(({ password, ...u }) => u); // Şifreleri gönderme!
+        res.json(safeUsers);
+    } catch (error) {
+        console.error('Users API Error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 
 
 app.listen(PORT, () => {
