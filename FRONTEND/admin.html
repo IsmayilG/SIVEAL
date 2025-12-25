@@ -754,6 +754,13 @@
                     'Content-Type': 'application/json',
                     ...options.headers
                 }
+            }).catch(error => {
+                if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+                    alert("CORS Hatası olabilir, Backend izin vermiyor!");
+                } else {
+                    alert("Bağlantı Hatası: " + error.message);
+                }
+                throw error;
             });
         }
 
