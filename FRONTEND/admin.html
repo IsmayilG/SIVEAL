@@ -744,8 +744,10 @@
             document.querySelectorAll('.admin-tab').forEach(tab => {
                 if (tab.id === tabName + '-tab') {
                     tab.classList.add('active');
+                    tab.style.display = 'block';
                 } else {
                     tab.classList.remove('active');
+                    tab.style.display = 'none';
                 }
             });
 
