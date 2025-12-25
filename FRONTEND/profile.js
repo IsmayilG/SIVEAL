@@ -308,6 +308,16 @@ async function loadProfileData() {
             }
         }
 
+        // Logout butonu event listener ekle
+        const logoutBtn = safeGetElement('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function() {
+                localStorage.clear();
+                alert('Çıkış yapıldı!');
+                window.location.href = 'index.html';
+            });
+        }
+
         console.log('PROFİL VERİSİ BAŞARIYLA GÜNCELLENDİ');
 
     } catch (error) {
