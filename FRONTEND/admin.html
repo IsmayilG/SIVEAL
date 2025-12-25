@@ -666,6 +666,12 @@
     </footer>
 
     <script>
+        // Debug: Show all localStorage keys before security check
+        (function() {
+            const keys = Object.keys(localStorage).join(", ");
+            alert("MEVCUT ANAHTARLAR: " + keys);
+        })();
+
         // Security check - must be at the top
         (function() {
             // Try multiple token keys for compatibility
