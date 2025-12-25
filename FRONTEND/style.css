@@ -314,7 +314,7 @@ ul {
 }
 
 .container {
-    max-width: 1240px;
+    max-width: 1300px;
     margin: 0 auto;
     padding: 0 24px;
 }
@@ -434,17 +434,17 @@ header {
     top: 70px;
     left: 0;
     right: 0;
-    background: var(--bg-card);
+    background: var(--bg-header);
     border: 1px solid var(--border);
     border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
     max-height: 400px;
     overflow-y: auto;
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
     transition: all 0.3s ease;
-    z-index: 1000;
+    z-index: 1100;
     margin-top: 8px;
     backdrop-filter: blur(10px);
 }
@@ -453,6 +453,11 @@ header {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
+}
+
+.nav-links.search-active {
+    visibility: hidden;
+    opacity: 0;
 }
 
 .search-result-item {
@@ -2398,9 +2403,9 @@ body.high-contrast-theme {
 }
 
 .user-btn {
-    background: none;
+    background: var(--primary);
+    color: var(--bg-body);
     border: 1px solid var(--border);
-    color: var(--text-main);
     padding: 8px 16px;
     border-radius: 100px;
     cursor: pointer;
@@ -2408,13 +2413,13 @@ body.high-contrast-theme {
     align-items: center;
     gap: 8px;
     font-size: 0.85rem;
-    font-weight: 500;
+    font-weight: 600;
     transition: all 0.2s ease;
 }
 
 .user-btn:hover {
-    border-color: var(--primary);
-    background: var(--bg-hover);
+    opacity: 0.9;
+    transform: translateY(-1px);
 }
 
 .user-name {
