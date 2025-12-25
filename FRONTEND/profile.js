@@ -180,20 +180,59 @@ async function loadProfileData() {
         const response = await makeAuthenticatedRequest('/api/profile');
         const profileData = await response.json();
 
-        // Update profile info
-        document.getElementById('profile-name').textContent = profileData.username;
-        document.getElementById('profile-email').textContent = profileData.email;
-        document.getElementById('profile-role').textContent = profileData.role === 'admin' ? 'Administrator' : 'Member';
-        document.getElementById('profile-joined').textContent = `Joined: ${new Date(profileData.createdAt).toLocaleDateString()}`;
-        document.getElementById('profile-last-login').textContent = profileData.lastLogin ?
-            `Last Login: ${new Date(profileData.lastLogin).toLocaleDateString()}` : 'Last Login: Never';
+        // Update profile info with safe element access
+        const nameEl = document.getElementById('profile-name');
+        if (nameEl) {
+            nameEl.textContent = profileData.username;
+        } else {
+            console.warn('Warning: profile-name element not found');
+        }
 
-        // Update edit form
-        document.getElementById('edit-email').value = profileData.email;
+        const emailEl = document.getElementById('profile-email');
+        if (emailEl) {
+            emailEl.textContent = profileData.email;
+        } else {
+            console.warn('Warning: profile-email element not found');
+        }
+
+        const roleEl = document.getElementById('profile-role');
+        if (roleEl) {
+            roleEl.textContent = profileData.role === 'admin' ? 'Administrator' : 'Member';
+        } else {
+            console.warn('Warning: profile-role element not found');
+        }
+
+        const joinedEl = document.getElementById('profile-joined');
+        if (joinedEl) {
+            joinedEl.textContent = `Joined: ${new Date(profileData.createdAt).toLocaleDateString()}`;
+        } else {
+            console.warn('Warning: profile-joined element not found');
+        }
+
+        const lastLoginEl = document.getElementById('profile-last-login');
+        if (lastLoginEl) {
+            lastLoginEl.textContent = profileData.lastLogin ?
+                `Last Login: ${new Date(profileData.lastLogin).toLocaleDateString()}` : 'Last Login: Never';
+        } else {
+            console.warn('Warning: profile-last-login element not found');
+        }
+
+        // Update edit form with safe access
+        const editEmailEl = document.getElementById('edit-email');
+        if (editEmailEl) {
+            editEmailEl.value = profileData.email;
+        } else {
+            console.warn('Warning: edit-email element not found');
+        }
 
         // Show admin tab if user is admin
         if (currentUser?.role === 'admin') {
-            document.querySelector('[data-tab="admin"]').style.display = 'block';
+            const adminTab = document.querySelector('[data-tab="admin"]');
+            if (adminTab) {
+                adminTab.style.display = 'block';
+            } else {
+                console.warn('Warning: admin tab element not found');
+            }
         }
 
     } catch (error) {
@@ -306,7 +345,19 @@ function showMessage(text, type) {
         messageEl = document.createElement('div');
         messageEl.id = 'profile-message';
         messageEl.className = 'message';
-        document.querySelector('.container').insertBefore(messageEl, document.querySelector('.profile-content'));
+
+        // Try to find the proper container for the message
+        const container = document.querySelector('.container');
+        const profileContent = document.querySelector('.profile-content');
+
+        if (container && profileContent) {
+            // Insert before profile content if both exist
+            container.insertBefore(messageEl, profileContent);
+        } else {
+            // Fallback: append to body
+            console.warn('Warning: profile message container not found, using fallback');
+            document.body.appendChild(messageEl);
+        }
     }
 
     messageEl.textContent = text;
@@ -315,7 +366,9 @@ function showMessage(text, type) {
 
     // Auto-hide after 5 seconds
     setTimeout(() => {
-        messageEl.style.display = 'none';
+        if (messageEl) {
+            messageEl.style.display = 'none';
+        }
     }, 5000);
 }
 
