@@ -6,6 +6,121 @@
     <title>Profile - SIVEAL</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Profile-specific styles */
+        .profile-header {
+            position: relative;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+
+        .logout-section-top {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+        }
+
+        .btn-logout-modern {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-logout-modern:hover {
+            background: #ef4444;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .profile-avatar {
+            position: relative;
+            display: inline-block;
+            margin-right: 32px;
+        }
+
+        .profile-avatar img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid var(--primary);
+            box-shadow: 0 8px 24px rgba(96, 165, 250, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .profile-avatar:hover img {
+            transform: scale(1.05);
+        }
+
+        .avatar-edit-btn {
+            position: absolute;
+            bottom: -10px;
+            right: -10px;
+            background: var(--primary);
+            color: black;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .profile-avatar:hover .avatar-edit-btn {
+            opacity: 1;
+        }
+
+        .profile-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .profile-info h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .profile-info p {
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .profile-role {
+            display: inline-block;
+            background: var(--primary);
+            color: black;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 0;
+        }
+    </style>
 </head>
 <body>
 
@@ -59,29 +174,29 @@
     </header>
 
     <div class="container">
-        <div class="profile-container">
-            <div class="profile-header">
-                <!-- Logout Button at the top -->
-                <div class="logout-section-top" style="display: flex; justify-content: flex-end; width: 100%;">
-                    <button id="logout-btn-top" class="btn-logout-stylish">Çıkış Yap</button>
-                </div>
+            <div class="profile-container">
+                <div class="profile-header">
+                    <!-- Logout Button at the top -->
+                    <div class="logout-section-top">
+                        <button id="logout-btn-top" class="btn-logout-modern">Çıkış Yap</button>
+                    </div>
 
-                <div class="profile-avatar">
-                    <img id="profile-avatar" src="https://picsum.photos/150/150?random=999" alt="Profile Picture">
-                    <button class="avatar-edit-btn" id="avatar-edit-btn">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                            <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                        </svg>
-                    </button>
+                    <div class="profile-avatar">
+                        <img id="profile-avatar" src="https://picsum.photos/150/150?random=999" alt="Profile Picture">
+                        <button class="avatar-edit-btn" id="avatar-edit-btn">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="profile-info">
+                        <h1 id="profile-name">Loading...</h1>
+                        <p id="profile-email">Loading...</p>
+                        <p id="profile-role" class="profile-role">User</p>
+                        <p id="profile-joined">Joined: Loading...</p>
+                    </div>
                 </div>
-                <div class="profile-info">
-                    <h1 id="profile-name">Loading...</h1>
-                    <p id="profile-email">Loading...</p>
-                    <p id="profile-role" class="profile-role">User</p>
-                    <p id="profile-joined">Joined: Loading...</p>
-                </div>
-            </div>
 
             <div class="profile-content">
                 <div class="profile-sidebar">
@@ -249,3 +364,47 @@
     
 </body>
 </html>
+
+</final_file_content>
+
+IMPORTANT: For any future changes to this file, use the final_file_content shown above as your reference. This content reflects the current state of the file, including any auto-formatting (e.g., if you used single quotes but the formatter converted them to double quotes). Always base your SEARCH/REPLACE operations on this final version to ensure accuracy.
+
+ <environment_details>
+# Visual Studio Code Visible Files
+FRONTEND/profile.html
+
+# Visual Studio Code Open Tabs
+FRONTEND/about.html
+FRONTEND/privacy.html
+FRONTEND/terms.html
+FRONTEND/contact.html
+FRONTEND/advertise.html
+BACKEND/data/news.json
+FRONTEND/rss.xml
+FRONTEND/admin.js
+FRONTEND/article.html
+BACKEND/data/users.json
+FRONTEND/style.css
+BACKEND/package.json
+BACKEND/server.js
+FRONTEND/login.html
+FRONTEND/script.js
+FRONTEND/index.html
+FRONTEND/profile.js
+FRONTEND/admin.html
+FRONTEND/profile.html
+FRONTEND/netlify.toml
+FRONTEND/article.js
+FRONTEND/_redirects
+FRONTEND/README.md
+README.md
+.gitignore
+
+# Current Time
+12/25/2025, 12:16:40 PM (Asia/Baku, UTC+4:00)
+
+# Context Window Usage
+193,718 / 256K tokens used (76%)
+
+# Current Mode
+ACT MODE

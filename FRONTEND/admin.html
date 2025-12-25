@@ -769,15 +769,44 @@
         // ==========================================
 
         async function loadDashboardData() {
+            console.log('Dashboard verileri yükleniyor...');
+            
+            // Load data independently to prevent chain failures
+            const [usersResult, articlesResult] = await Promise.allSettled([
+                loadUsersData(),
+                loadArticlesData()
+            ]);
+
+            // Handle users data
+            if (usersResult.status === 'fulfilled') {
+                console.log('Users data loaded successfully');
+            } else {
+                console.warn('Users API bulunamadı:', usersResult.reason);
+                safeUpdateElement('stat-total-users', 'textContent', '0');
+                users = [];
+            }
+
+            // Handle articles data
+            if (articlesResult.status === 'fulfilled') {
+                console.log('Articles data loaded successfully');
+            } else {
+                console.error('Articles API Error:', articlesResult.reason);
+                safeUpdateElement('stat-total-articles', 'textContent', '0');
+                safeUpdateElement('stat-total-views', 'textContent', '0');
+                safeUpdateElement('stat-recent-comments', 'textContent', '0');
+                articles = [];
+            }
+
+            console.log('Dashboard data loading completed');
+        }
+
+        async function loadUsersData() {
             try {
-                console.log('Dashboard verileri yükleniyor...');
-                
-                // Load users count
-                const usersResponse = await makeAuthenticatedRequest('/api/users');
-                if (!usersResponse.ok) {
-                    throw new Error(`Users API Error: ${usersResponse.status} ${usersResponse.statusText}`);
+                const response = await makeAuthenticatedRequest('/api/auth/users');
+                if (!response.ok) {
+                    throw new Error(`Users API Error: ${response.status} ${response.statusText}`);
                 }
-                const usersData = await usersResponse.json();
+                const usersData = await response.json();
                 console.log('Gelen Kullanıcılar:', usersData);
                 
                 // Smart parsing for users data
@@ -785,13 +814,20 @@
                 const usersCount = usersList.length || 0;
                 safeUpdateElement('stat-total-users', 'textContent', usersCount.toString());
                 users = usersList;
+                return usersList;
+            } catch (error) {
+                console.error('USERS LOAD HATASI:', error);
+                throw error;
+            }
+        }
 
-                // Load articles count and data
-                const articlesResponse = await makeAuthenticatedRequest('/api/articles');
-                if (!articlesResponse.ok) {
-                    throw new Error(`Articles API Error: ${articlesResponse.status} ${articlesResponse.statusText}`);
+        async function loadArticlesData() {
+            try {
+                const response = await makeAuthenticatedRequest('/api/articles');
+                if (!response.ok) {
+                    throw new Error(`Articles API Error: ${response.status} ${response.statusText}`);
                 }
-                const articlesData = await articlesResponse.json();
+                const articlesData = await response.json();
                 console.log('Gelen Makaleler:', articlesData);
                 
                 // Smart parsing for articles data
@@ -807,13 +843,11 @@
                 const recentComments = Math.floor(Math.random() * 20) + 5;
                 safeUpdateElement('stat-recent-comments', 'textContent', recentComments.toString());
 
-                // Store data for other tabs
                 articles = articlesList;
-
-                console.log('Dashboard data loaded successfully');
+                return articlesList;
             } catch (error) {
-                console.error('DASHBOARD DATA HATASI:', error);
-                safeShowMessage('Failed to load dashboard data', 'error');
+                console.error('ARTICLES LOAD HATASI:', error);
+                throw error;
             }
         }
 
