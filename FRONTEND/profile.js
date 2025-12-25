@@ -4,8 +4,8 @@
 // ==========================================
 
 // CLOUDINARY CONSTANTS - Replace with your own values
-const CLOUDINARY_CLOUD_NAME = 'YOUR_CLOUD_NAME';
-const CLOUDINARY_UPLOAD_PRESET = 'YOUR_UPLOAD_PRESET';
+const CLOUDINARY_CLOUD_NAME = 'dpmqiqsm7';
+const CLOUDINARY_UPLOAD_PRESET = 'ml_default';
 
 // Global değişkenler - güvenli başlatma
 let currentUser = null;

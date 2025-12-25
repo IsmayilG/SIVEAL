@@ -762,17 +762,26 @@
                 // Load users count
                 const usersResponse = await makeAuthenticatedRequest('/api/users');
                 const usersData = await usersResponse.json();
-                const usersCount = usersData.length || 0;
+                console.log('Gelen Kullanıcılar:', usersData);
+                
+                // Smart parsing for users data
+                const usersList = Array.isArray(usersData) ? usersData : (usersData.data || usersData.users || usersData.result || []);
+                const usersCount = usersList.length || 0;
                 safeUpdateElement('stat-total-users', 'textContent', usersCount.toString());
+                users = usersList;
 
                 // Load articles count and data
                 const articlesResponse = await makeAuthenticatedRequest('/api/articles');
                 const articlesData = await articlesResponse.json();
-                const articlesCount = articlesData.length || 0;
+                console.log('Gelen Makaleler:', articlesData);
+                
+                // Smart parsing for articles data
+                const articlesList = Array.isArray(articlesData) ? articlesData : (articlesData.data || articlesData.articles || articlesData.result || []);
+                const articlesCount = articlesList.length || 0;
                 safeUpdateElement('stat-total-articles', 'textContent', articlesCount.toString());
 
                 // Calculate total views
-                const totalViews = articlesData.reduce((sum, article) => sum + (article.views || 0), 0);
+                const totalViews = articlesList.reduce((sum, article) => sum + (article.views || 0), 0);
                 safeUpdateElement('stat-total-views', 'textContent', totalViews.toLocaleString());
 
                 // Calculate recent comments (mock data for now)
@@ -780,8 +789,7 @@
                 safeUpdateElement('stat-recent-comments', 'textContent', recentComments.toString());
 
                 // Store data for other tabs
-                users = usersData;
-                articles = articlesData;
+                articles = articlesList;
 
                 console.log('Dashboard data loaded successfully');
             } catch (error) {
@@ -795,9 +803,11 @@
             try {
                 const response = await makeAuthenticatedRequest('/api/articles');
                 const data = await response.json();
+                console.log('Gelen Makaleler (Articles Tab):', data);
 
                 if (response.ok) {
-                    articles = data;
+                    // Smart parsing for articles data
+                    articles = Array.isArray(data) ? data : (data.data || data.articles || data.result || []);
                     renderArticlesTable();
                 } else {
                     throw new Error(data.error || 'Failed to load articles');
@@ -813,9 +823,11 @@
             try {
                 const response = await makeAuthenticatedRequest('/api/users');
                 const data = await response.json();
+                console.log('Gelen Kullanıcılar (Users Tab):', data);
 
                 if (response.ok) {
-                    users = data;
+                    // Smart parsing for users data
+                    users = Array.isArray(data) ? data : (data.data || data.users || data.result || []);
                     renderUsersTable();
                 } else {
                     throw new Error(data.error || 'Failed to load users');
@@ -831,22 +843,33 @@
             const tbody = document.getElementById('articles-table-body');
             tbody.innerHTML = '';
             
+            if (articles.length === 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 40px;">
+                        Hiç makale bulunamadı
+                    </td>
+                `;
+                tbody.appendChild(tr);
+                return;
+            }
+            
             articles.forEach(article => {
                 const tr = document.createElement('tr');
-                const formattedDate = formatDate(article.createdAt || article.date);
+                const formattedDate = formatDate(article.createdAt || article.date || article.publishedAt);
                 tr.innerHTML = `
-                    <td>${article.title || 'Untitled'}</td>
-                    <td><span class="status-badge">${article.category || 'Uncategorized'}</span></td>
-                    <td>${article.author || 'Unknown'}</td>
+                    <td>${article.title || article.name || article.heading || 'Untitled'}</td>
+                    <td><span class="status-badge">${article.category || article.type || 'Uncategorized'}</span></td>
+                    <td>${article.author || article.writer || article.creator || 'Unknown'}</td>
                     <td><span class="status-badge status-${article.status || 'draft'}">${article.status || 'draft'}</span></td>
-                    <td>${(article.views || 0).toLocaleString()}</td>
+                    <td>${(article.views || article.viewCount || 0).toLocaleString()}</td>
                     <td class="action-buttons">
-                        <button class="btn-icon edit" onclick="editArticle(${article.id})">
+                        <button class="btn-icon edit" onclick="editArticle(${article.id || article._id})">
                             <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
                             </svg>
                         </button>
-                        <button class="btn-icon delete" onclick="deleteArticle(${article.id})">
+                        <button class="btn-icon delete" onclick="deleteArticle(${article.id || article._id})">
                             <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
                             </svg>
@@ -862,22 +885,33 @@
             const tbody = document.getElementById('users-table-body');
             tbody.innerHTML = '';
             
+            if (users.length === 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 40px;">
+                        Hiç kullanıcı bulunamadı
+                    </td>
+                `;
+                tbody.appendChild(tr);
+                return;
+            }
+            
             users.forEach(user => {
                 const tr = document.createElement('tr');
-                const formattedDate = formatDate(user.createdAt || user.joined);
+                const formattedDate = formatDate(user.createdAt || user.joined || user.registeredAt || user.date);
                 tr.innerHTML = `
-                    <td>${user.name || user.username || 'Unknown'}</td>
-                    <td>${user.email || 'No email'}</td>
-                    <td><span class="status-badge">${user.role || 'user'}</span></td>
+                    <td>${user.name || user.username || user.fullName || user.displayName || 'Unknown'}</td>
+                    <td>${user.email || user.emailAddress || 'No email'}</td>
+                    <td><span class="status-badge">${user.role || user.userType || 'user'}</span></td>
                     <td>${formattedDate}</td>
                     <td><span class="status-badge status-${user.status || 'active'}">${user.status || 'active'}</span></td>
                     <td class="action-buttons">
-                        <button class="btn-icon edit" onclick="editUser(${user.id})">
+                        <button class="btn-icon edit" onclick="editUser(${user.id || user._id})">
                             <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
                             </svg>
                         </button>
-                        <button class="btn-icon delete" onclick="deleteUser(${user.id})">
+                        <button class="btn-icon delete" onclick="deleteUser(${user.id || user._id})">
                             <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
                             </svg>
