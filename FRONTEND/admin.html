@@ -771,71 +771,43 @@
         async function loadDashboardData() {
             console.log('Dashboard verileri yükleniyor...');
             
-            // Load data independently to prevent chain failures
-            const [usersResult, articlesResult] = await Promise.allSettled([
-                loadUsersData(),
-                loadArticlesData()
-            ]);
-
-            // Handle users data
-            if (usersResult.status === 'fulfilled') {
-                console.log('Users data loaded successfully');
-            } else {
-                console.warn('Users API bulunamadı:', usersResult.reason);
-                safeUpdateElement('stat-total-users', 'textContent', '0');
-                users = [];
-            }
-
-            // Handle articles data
-            if (articlesResult.status === 'fulfilled') {
-                console.log('Articles data loaded successfully');
-            } else {
-                console.error('Articles API Error:', articlesResult.reason);
-                safeUpdateElement('stat-total-articles', 'textContent', '0');
-                safeUpdateElement('stat-total-views', 'textContent', '0');
-                safeUpdateElement('stat-recent-comments', 'textContent', '0');
-                articles = [];
-            }
-
-            console.log('Dashboard data loading completed');
-        }
-
-        async function loadUsersData() {
             try {
-                const response = await makeAuthenticatedRequest('/users');
+                // Load dashboard stats from server
+                const response = await makeAuthenticatedRequest('/api/admin/stats');
                 if (!response.ok) {
-                    throw new Error(`Users API Error: ${response.status} ${response.statusText}`);
+                    throw new Error(`Dashboard API Error: ${response.status} ${response.statusText}`);
                 }
-                const usersData = await response.json();
-                console.log('Gelen Kullanıcılar:', usersData);
-                
-                // Smart parsing for users data
-                const usersList = Array.isArray(usersData) ? usersData : (usersData.data || usersData.users || usersData.result || []);
-                const usersCount = usersList.length || 0;
-                safeUpdateElement('stat-total-users', 'textContent', usersCount.toString());
-                users = usersList;
-                return usersList;
+                const stats = await response.json();
+                console.log('Gelen Dashboard İstatistikleri:', stats);
+
+                // Update dashboard stats directly from API response
+                safeUpdateElement('stat-total-articles', 'textContent', (stats.totalArticles || 0).toString());
+                safeUpdateElement('stat-total-users', 'textContent', (stats.totalUsers || 0).toString());
+                safeUpdateElement('stat-total-views', 'textContent', (stats.totalViews || 0).toLocaleString());
+                safeUpdateElement('stat-recent-comments', 'textContent', (stats.recentComments || 0).toString());
+
+                console.log('Dashboard data loaded successfully');
             } catch (error) {
-                console.error('USERS LOAD HATASI:', error);
-                throw error;
+                console.error('DASHBOARD LOAD HATASI:', error);
+                safeShowMessage('Failed to load dashboard data', 'error');
             }
         }
 
         async function loadArticlesData() {
             try {
-                const response = await makeAuthenticatedRequest('/articles');
+                const response = await makeAuthenticatedRequest('/api/news');
                 if (!response.ok) {
-                    throw new Error(`Articles API Error: ${response.status} ${response.statusText}`);
+                    throw new Error(`News API Error: ${response.status} ${response.statusText}`);
                 }
-                const articlesData = await response.json();
-                console.log('Gelen Makaleler:', articlesData);
+                const newsData = await response.json();
+                console.log('Gelen Makaleler:', newsData);
                 
-                // Smart parsing for articles data
-                const articlesList = Array.isArray(articlesData) ? articlesData : (articlesData.data || articlesData.articles || articlesData.result || []);
+                // Smart parsing for news data (server.js uses 'news' structure)
+                const articlesList = Array.isArray(newsData) ? newsData : (newsData.data || newsData.news || newsData.result || []);
                 const articlesCount = articlesList.length || 0;
                 safeUpdateElement('stat-total-articles', 'textContent', articlesCount.toString());
 
-                // Calculate total views
+                // Calculate total views from news data
                 const totalViews = articlesList.reduce((sum, article) => sum + (article.views || 0), 0);
                 safeUpdateElement('stat-total-views', 'textContent', totalViews.toLocaleString());
 
@@ -846,7 +818,7 @@
                 articles = articlesList;
                 return articlesList;
             } catch (error) {
-                console.error('ARTICLES LOAD HATASI:', error);
+                console.error('NEWS LOAD HATASI:', error);
                 throw error;
             }
         }
