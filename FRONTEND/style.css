@@ -329,7 +329,8 @@ header {
     height: 70px;
     display: flex;
     align-items: center;
-    max-width: 100%;
+    width: 100vw;
+    overflow: hidden;
     box-sizing: border-box;
 }
 
@@ -1026,8 +1027,17 @@ header {
     height: fit-content;
     z-index: 1;
     background: var(--bg-body);
-    padding-left: 24px;
-    margin-left: -24px;
+    width: 100%;
+}
+
+@media (max-width: 900px) {
+    .sidebar {
+        position: relative;
+        top: auto;
+        width: 100%;
+        margin-top: 32px;
+        z-index: 1;
+    }
 }
 
 .widget {
