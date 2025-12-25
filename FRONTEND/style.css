@@ -329,9 +329,10 @@ header {
     height: 70px;
     display: flex;
     align-items: center;
-    width: 100vw;
-    overflow: hidden;
+    width: 100%;
+    overflow: visible;
     box-sizing: border-box;
+    padding: 0 20px;
 }
 
 .navbar {
@@ -2307,6 +2308,7 @@ footer {
     overflow: hidden;
     border: 1px solid var(--border);
     margin-left: 10px;
+    gap: 2px;
 }
 
 .lang-btn {
@@ -2329,6 +2331,18 @@ footer {
 .lang-btn.active {
     background: var(--primary);
     color: #000;
+}
+
+@media (max-width: 768px) {
+    .language-selector {
+        font-size: 0.7rem;
+        padding: 4px 8px;
+    }
+    
+    .lang-btn {
+        padding: 4px 8px;
+        min-width: 28px;
+    }
 }
 
 /* Light Theme Variables */
