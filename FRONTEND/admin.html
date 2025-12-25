@@ -669,9 +669,16 @@
         // API Configuration
         const API_BASE_URL = 'https://siveal-backend.onrender.com';
 
-        // Security check - must be at the top
-        (function() {
-            // Use correct localStorage keys
+        // Global variables
+        let currentTab = 'dashboard';
+        let articles = [];
+        let users = [];
+
+        // ==========================================
+        // AUTHENTICATION FUNCTIONS
+        // ==========================================
+
+        function checkAuth() {
             const token = localStorage.getItem('siveal_token');
             const user = JSON.parse(localStorage.getItem('siveal_user') || '{}');
             
@@ -704,7 +711,7 @@
                 setTimeout(() => {
                     window.location.href = 'index.html';
                 }, 2000);
-                return;
+                return false;
             }
 
             // Show content if authorized
@@ -723,9 +730,13 @@
             }
             
             console.log('Access granted - Admin panel loaded successfully!');
-        })();
+            return true;
+        }
 
-        // Enhanced authenticated request helper
+        // ==========================================
+        // API FUNCTIONS
+        // ==========================================
+
         function makeAuthenticatedRequest(url, options = {}) {
             const token = localStorage.getItem('siveal_token');
             
@@ -746,43 +757,14 @@
             });
         }
 
-        // Admin functionality
-        let currentTab = 'dashboard';
-        let articles = [];
-        let users = [];
+        // ==========================================
+        // DASHBOARD FUNCTIONS
+        // ==========================================
 
-        // Tab switching
-        function switchTab(tabName) {
-            currentTab = tabName;
-            
-            // Update nav buttons
-            document.querySelectorAll('.admin-nav-btn').forEach(btn => {
-                if (btn.dataset.tab === tabName) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
-
-            // Show/hide tabs
-            document.querySelectorAll('.admin-tab').forEach(tab => {
-                if (tab.id === tabName + '-tab') {
-                    tab.classList.add('active');
-                    tab.style.display = 'block';
-                } else {
-                    tab.classList.remove('active');
-                    tab.style.display = 'none';
-                }
-            });
-
-            // Load data for the tab
-            if (tabName === 'articles') loadArticles();
-            if (tabName === 'users') loadUsers();
-        }
-
-        // Load dashboard data from backend
         async function loadDashboardData() {
             try {
+                console.log('Dashboard verileri yükleniyor...');
+                
                 // Load users count
                 const usersResponse = await makeAuthenticatedRequest('/api/users');
                 const usersData = await usersResponse.json();
@@ -822,7 +804,42 @@
             }
         }
 
-        // Load articles from backend
+        // ==========================================
+        // TAB MANAGEMENT FUNCTIONS
+        // ==========================================
+
+        function switchTab(tabName) {
+            currentTab = tabName;
+            
+            // Update nav buttons
+            document.querySelectorAll('.admin-nav-btn').forEach(btn => {
+                if (btn.dataset.tab === tabName) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // Show/hide tabs
+            document.querySelectorAll('.admin-tab').forEach(tab => {
+                if (tab.id === tabName + '-tab') {
+                    tab.classList.add('active');
+                    tab.style.display = 'block';
+                } else {
+                    tab.classList.remove('active');
+                    tab.style.display = 'none';
+                }
+            });
+
+            // Load data for the tab
+            if (tabName === 'articles') loadArticles();
+            if (tabName === 'users') loadUsers();
+        }
+
+        // ==========================================
+        // DATA RENDERING FUNCTIONS
+        // ==========================================
+
         async function loadArticles() {
             try {
                 const response = await makeAuthenticatedRequest('/api/articles');
@@ -842,7 +859,6 @@
             }
         }
 
-        // Load users from backend
         async function loadUsers() {
             try {
                 const response = await makeAuthenticatedRequest('/api/users');
@@ -862,7 +878,6 @@
             }
         }
 
-        // Render articles table with backend data
         function renderArticlesTable() {
             const tbody = document.getElementById('articles-table-body');
             tbody.innerHTML = '';
@@ -904,7 +919,6 @@
             });
         }
 
-        // Render users table with backend data
         function renderUsersTable() {
             const tbody = document.getElementById('users-table-body');
             tbody.innerHTML = '';
@@ -946,7 +960,10 @@
             });
         }
 
-        // Format date function
+        // ==========================================
+        // UTILITY FUNCTIONS
+        // ==========================================
+
         function formatDate(dateString) {
             if (!dateString) return 'N/A';
             try {
@@ -961,7 +978,6 @@
             }
         }
 
-        // Safe element update function
         function safeUpdateElement(id, property, value) {
             const el = document.getElementById(id);
             if (el && el[property] !== undefined) {
@@ -973,13 +989,15 @@
             }
         }
 
-        // Safe message show function
         function safeShowMessage(text, type) {
             if (!text) return;
             console.log(`${type.toUpperCase()}: ${text}`);
         }
 
-        // Article management
+        // ==========================================
+        // FORM MANAGEMENT FUNCTIONS
+        // ==========================================
+
         function showAddArticleForm() {
             document.getElementById('form-title').textContent = 'Add New Article';
             document.getElementById('form-submit-text').textContent = 'Save Article';
@@ -992,212 +1010,6 @@
             document.getElementById('article-form').style.display = 'none';
         }
 
-        function loadArticles() {
-            // This would normally fetch from the backend
-            // For now, we'll simulate with local data or mock API
-            const mockArticles = [
-                {
-                    id: 1,
-                    title: 'AI Breakthrough in Quantum Computing',
-                    category: 'AI & Robotics',
-                    author: 'Dr. Jane Smith',
-                    status: 'published',
-                    views: 1250,
-                    content: 'Lorem ipsum dolor sit amet...'
-                }
-            ];
-            
-            articles = mockArticles;
-            renderArticlesTable();
-        }
-
-        function renderArticlesTable() {
-            const tbody = document.getElementById('articles-table-body');
-            tbody.innerHTML = '';
-            
-            articles.forEach(article => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${article.title}</td>
-                    <td><span class="status-badge">${article.category}</span></td>
-                    <td>${article.author}</td>
-                    <td><span class="status-badge status-${article.status}">${article.status}</span></td>
-                    <td>${article.views}</td>
-                    <td class="action-buttons">
-                        <button class="btn-icon edit" onclick="editArticle(${article.id})">
-                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                            </svg>
-                        </button>
-                        <button class="btn-icon delete" onclick="deleteArticle(${article.id})">
-                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-                            </svg>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function editArticle(id) {
-            const article = articles.find(a => a.id === id);
-            if (!article) return;
-
-            document.getElementById('form-title').textContent = 'Edit Article';
-            document.getElementById('form-submit-text').textContent = 'Update Article';
-            document.getElementById('article-id').value = article.id;
-            document.getElementById('article-title').value = article.title;
-            document.getElementById('article-category').value = article.category;
-            document.getElementById('article-author').value = article.author;
-            document.getElementById('article-status').value = article.status;
-            document.getElementById('article-views').value = article.views;
-            document.getElementById('article-content').value = article.content;
-            
-            document.getElementById('article-form').style.display = 'block';
-        }
-
-        function deleteArticle(id) {
-            if (confirm('Are you sure you want to delete this article?')) {
-                articles = articles.filter(a => a.id !== id);
-                renderArticlesTable();
-            }
-        }
-
-        // User management
-        function loadUsers() {
-            const mockUsers = [
-                {
-                    id: 1,
-                    name: 'John Doe',
-                    email: 'john@example.com',
-                    role: 'admin',
-                    joined: '2025-01-15',
-                    status: 'active'
-                },
-                {
-                    id: 2,
-                    name: 'Jane Smith',
-                    email: 'jane@example.com',
-                    role: 'user',
-                    joined: '2025-02-20',
-                    status: 'active'
-                }
-            ];
-            
-            users = mockUsers;
-            renderUsersTable();
-        }
-
-        function renderUsersTable() {
-            const tbody = document.getElementById('users-table-body');
-            tbody.innerHTML = '';
-            
-            users.forEach(user => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${user.name}</td>
-                    <td>${user.email}</td>
-                    <td><span class="status-badge">${user.role}</span></td>
-                    <td>${user.joined}</td>
-                    <td><span class="status-badge status-${user.status}">${user.status}</span></td>
-                    <td class="action-buttons">
-                        <button class="btn-icon edit" onclick="editUser(${user.id})">
-                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                            </svg>
-                        </button>
-                        <button class="btn-icon delete" onclick="deleteUser(${user.id})">
-                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-                            </svg>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function editUser(id) {
-            alert('Edit user functionality would be implemented here');
-        }
-
-        function deleteUser(id) {
-            if (confirm('Are you sure you want to delete this user?')) {
-                users = users.filter(u => u.id !== id);
-                renderUsersTable();
-            }
-        }
-
-        // Event listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Dashboard verileri yükleniyor...');
-            loadDashboardData();
-
-            // Tab navigation
-            document.querySelectorAll('.admin-nav-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    switchTab(btn.dataset.tab);
-                });
-            });
-
-            // Form submission
-            document.getElementById('article-form-content').addEventListener('submit', function(e) {
-                e.preventDefault();
-                saveArticle();
-            });
-
-            // User info display
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            if (user && user.name) {
-                document.getElementById('user-name-display').textContent = user.name;
-                document.getElementById('user-btn').style.display = 'flex';
-            }
-        });
-
-        // Dashboard loading function
-        async function loadDashboardData() {
-            try {
-                // Load users count
-                const usersResponse = await makeAuthenticatedRequest('/api/users');
-                const usersData = await usersResponse.json();
-                console.log('Gelen Kullanıcılar:', usersData);
-                
-                // Smart parsing for users data
-                const usersList = Array.isArray(usersData) ? usersData : (usersData.data || usersData.users || usersData.result || []);
-                const usersCount = usersList.length || 0;
-                safeUpdateElement('stat-total-users', 'textContent', usersCount.toString());
-                users = usersList;
-
-                // Load articles count and data
-                const articlesResponse = await makeAuthenticatedRequest('/api/articles');
-                const articlesData = await articlesResponse.json();
-                console.log('Gelen Makaleler:', articlesData);
-                
-                // Smart parsing for articles data
-                const articlesList = Array.isArray(articlesData) ? articlesData : (articlesData.data || articlesData.articles || articlesData.result || []);
-                const articlesCount = articlesList.length || 0;
-                safeUpdateElement('stat-total-articles', 'textContent', articlesCount.toString());
-
-                // Calculate total views
-                const totalViews = articlesList.reduce((sum, article) => sum + (article.views || 0), 0);
-                safeUpdateElement('stat-total-views', 'textContent', totalViews.toLocaleString());
-
-                // Calculate recent comments (mock data for now)
-                const recentComments = Math.floor(Math.random() * 20) + 5;
-                safeUpdateElement('stat-recent-comments', 'textContent', recentComments.toString());
-
-                // Store data for other tabs
-                articles = articlesList;
-
-                console.log('Dashboard data loaded successfully');
-            } catch (error) {
-                console.error('DASHBOARD DATA HATASI:', error);
-                safeShowMessage('Failed to load dashboard data', 'error');
-            }
-        }
-
-        // Utility functions
         function saveArticle() {
             const id = document.getElementById('article-id').value;
             const article = {
@@ -1224,6 +1036,41 @@
             alert('Article saved successfully!');
         }
 
+        function editArticle(id) {
+            const article = articles.find(a => a.id === id);
+            if (!article) return;
+
+            document.getElementById('form-title').textContent = 'Edit Article';
+            document.getElementById('form-submit-text').textContent = 'Update Article';
+            document.getElementById('article-id').value = article.id;
+            document.getElementById('article-title').value = article.title;
+            document.getElementById('article-category').value = article.category;
+            document.getElementById('article-author').value = article.author;
+            document.getElementById('article-status').value = article.status;
+            document.getElementById('article-views').value = article.views;
+            document.getElementById('article-content').value = article.content;
+            
+            document.getElementById('article-form').style.display = 'block';
+        }
+
+        function deleteArticle(id) {
+            if (confirm('Are you sure you want to delete this article?')) {
+                articles = articles.filter(a => a.id !== id);
+                renderArticlesTable();
+            }
+        }
+
+        function editUser(id) {
+            alert('Edit user functionality would be implemented here');
+        }
+
+        function deleteUser(id) {
+            if (confirm('Are you sure you want to delete this user?')) {
+                users = users.filter(u => u.id !== id);
+                renderUsersTable();
+            }
+        }
+
         function exportData() {
             alert('Data export functionality would be implemented here');
         }
@@ -1235,6 +1082,41 @@
         function saveSettings() {
             alert('Settings saved successfully!');
         }
+
+        // ==========================================
+        // MAIN EXECUTION
+        // ==========================================
+
+        // Check authentication first
+        const isAuthenticated = checkAuth();
+        
+        if (isAuthenticated) {
+            console.log('Access granted & Data loading started...');
+            loadDashboardData();
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab navigation
+            document.querySelectorAll('.admin-nav-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    switchTab(btn.dataset.tab);
+                });
+            });
+
+            // Form submission
+            document.getElementById('article-form-content').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveArticle();
+            });
+
+            // User info display
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (user && user.name) {
+                document.getElementById('user-name-display').textContent = user.name;
+                document.getElementById('user-btn').style.display = 'flex';
+            }
+        });
     </script>
 </body>
 </html>
