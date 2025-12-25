@@ -334,6 +334,7 @@ async function loadProfileData() {
 
         // Kesin çözüm: Direkt onclick atama
         document.getElementById('logout-btn-top').onclick = function() {
+            console.log('Çıkış yapılıyor...');
             localStorage.clear();
             window.location.href = 'login.html'; // Giriş sayfasına yönlendir
         };

@@ -667,7 +667,7 @@
 
     <script>
         // API Configuration
-        const API_BASE_URL = 'https://siveal-backend.onrender.com';
+        const API_BASE_URL = 'https://siveal-backend.onrender.com/';
 
         // Global variables
         let currentTab = 'dashboard';
@@ -1140,6 +1140,33 @@
             loadDashboardData();
         }
 
+        // Test API button for debugging
+        function testAPIEndpoints() {
+            const endpoints = [
+                '/api/articles',
+                '/articles', 
+                '/api/v1/articles',
+                '/api/news',
+                '/news'
+            ];
+
+            endpoints.forEach(async (endpoint) => {
+                try {
+                    const response = await makeAuthenticatedRequest(endpoint);
+                    console.log(`TEST: ${endpoint} - Status: ${response.status}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log(`TEST: ${endpoint} - SUCCESS with ${data.length || data.length || 0} items`);
+                        alert(`SUCCESS: ${endpoint} returned ${data.length || data.length || 0} items`);
+                    } else {
+                        console.log(`TEST: ${endpoint} - FAILED with status ${response.status}`);
+                    }
+                } catch (error) {
+                    console.log(`TEST: ${endpoint} - ERROR: ${error.message}`);
+                }
+            });
+        }
+
         // Event listeners
         document.addEventListener('DOMContentLoaded', function() {
             // Tab navigation
@@ -1160,6 +1187,21 @@
             if (user && user.name) {
                 document.getElementById('user-name-display').textContent = user.name;
                 document.getElementById('user-btn').style.display = 'flex';
+            }
+
+            // Add test button to dashboard
+            const dashboardHeader = document.querySelector('.admin-header');
+            if (dashboardHeader) {
+                const testBtn = document.createElement('button');
+                testBtn.className = 'btn-admin-action btn-secondary';
+                testBtn.innerHTML = `
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                    </svg>
+                    Test API Endpoints
+                `;
+                testBtn.onclick = testAPIEndpoints;
+                dashboardHeader.appendChild(testBtn);
             }
         });
     </script>
