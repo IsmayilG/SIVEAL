@@ -668,12 +668,15 @@
     <script>
         // Security check - must be at the top
         (function() {
-            const token = localStorage.getItem('jwtToken');
+            // Try multiple token keys for compatibility
+            const token = localStorage.getItem('jwtToken') || localStorage.getItem('token');
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             
             // Debug logging
             console.log('Admin Panel Security Check:');
-            console.log('Token:', token);
+            console.log('Token (jwtToken):', localStorage.getItem('jwtToken'));
+            console.log('Token (token):', localStorage.getItem('token'));
+            console.log('Token used:', token);
             console.log('User object:', user);
             console.log('User role:', user.role);
             console.log('User role (lowercase):', user.role ? user.role.toLowerCase() : 'undefined');
@@ -690,7 +693,9 @@
             if (!hasValidToken || !hasValidUser || !hasAdminRole) {
                 // Show alert with debug info
                 const roleInfo = hasValidUser ? user.role : 'No role found';
-                alert("Erişim Reddedildi! Rolünüz: " + roleInfo + "\n\nDebug Info:\nToken: " + (hasValidToken ? 'Present' : 'Missing') + "\nUser: " + (hasValidUser ? 'Valid' : 'Invalid'));
+                const tokenInfo = localStorage.getItem('jwtToken') ? 'jwtToken: Present' : 
+                                 localStorage.getItem('token') ? 'token: Present' : 'No token found';
+                alert("Erişim Reddedildi! Rolünüz: " + roleInfo + "\n\nDebug Info:\n" + tokenInfo + "\nUser: " + (hasValidUser ? 'Valid' : 'Invalid'));
                 
                 document.body.style.display = 'none';
                 setTimeout(() => {
