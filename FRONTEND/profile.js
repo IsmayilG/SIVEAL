@@ -2,11 +2,10 @@
 let currentUser = null;
 let currentTab = 'overview';
 
-// API Base URL - use existing one from script.js or define fallback
-const API_URL = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL :
-  (window.location.hostname === 'localhost'
-    ? 'http://localhost:3000'
-    : 'https://siveal-backend.onrender.com');
+// API Base URL - use global variable from window to avoid conflicts
+const API_URL = window.API_BASE_URL || (window.location.hostname === 'localhost'
+  ? 'http://localhost:3000'
+  : 'https://siveal-backend.onrender.com');
 
 // Authentication utilities
 function getAuthToken() {

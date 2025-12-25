@@ -8,8 +8,8 @@ let carouselInterval = null;
 let carouselSlides = [];
 let currentLanguage = localStorage.getItem('siveal-language') || 'en';
 
-// API Base URL
-const API_BASE_URL = window.location.hostname === 'localhost'
+// API Base URL - Global variable to avoid conflicts
+window.API_BASE_URL = window.location.hostname === 'localhost'
   ? 'http://localhost:3000'
   : 'https://siveal-backend.onrender.com';
 
