@@ -461,8 +461,7 @@ header {
 }
 
 .nav-links.search-active {
-    visibility: hidden;
-    opacity: 0;
+    display: none;
 }
 
 .search-result-item {

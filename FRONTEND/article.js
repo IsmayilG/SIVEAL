@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const articleId = parseInt(urlParams.get('id'));
 
-    if (!articleId) {
+    if (!articleId || isNaN(articleId)) {
         window.location.href = 'index.html';
         return;
     }
