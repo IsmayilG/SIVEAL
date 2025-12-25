@@ -332,6 +332,12 @@ async function loadProfileData() {
             });
         }
 
+        // Kesin çözüm: Direkt onclick atama
+        document.getElementById('logout-btn-top').onclick = function() {
+            localStorage.clear();
+            window.location.href = 'login.html'; // Giriş sayfasına yönlendir
+        };
+
         console.log('PROFİL VERİSİ BAŞARIYLA GÜNCELLENDİ');
 
     } catch (error) {
