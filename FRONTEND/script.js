@@ -16,7 +16,7 @@ if (!window.API_BASE_URL) {
 }
 
 // Debug: Log API URL for troubleshooting
-console.log('API Base URL:', API_BASE_URL);
+console.log('API Base URL:', window.API_BASE_URL);
 console.log('Current hostname:', window.location.hostname);
 
 const translations = {
@@ -245,7 +245,7 @@ function makeAuthenticatedRequest(url, options = {}) {
     }
 
     // Ensure URL uses full API_BASE_URL
-    const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+    const fullUrl = url.startsWith('http') ? url : `${window.API_BASE_URL}${url}`;
 
     return fetch(fullUrl, {
         ...options,
@@ -294,6 +294,8 @@ function updateAuthUI(user) {
 
     // Find existing login button and replace it (don't clear entire header-actions)
     const existingBtn = document.getElementById('loginBtn') || document.getElementById('fallback-login-btn');
+
+    console.log('Existing button found:', existingBtn);
 
     if (existingBtn) {
         console.log('Replacing existing login button with user button');
@@ -403,7 +405,7 @@ function goToAdmin() {
 
 async function logout() {
     try {
-        await fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST' });
+        await fetch(`${window.API_BASE_URL}/api/auth/logout`, { method: 'POST' });
     } catch (error) {
         console.error('Logout error:', error);
     }
@@ -437,8 +439,6 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-
-
 async function fetchNews() {
     // Skip if news container doesn't exist (not on index page)
     if (!document.getElementById('news-container')) {
@@ -449,7 +449,7 @@ async function fetchNews() {
     showLoadingState();
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/news`);
+        const response = await fetch(`${window.API_BASE_URL}/api/news`);
         if (!response.ok) {
             throw new Error('Failed to fetch news');
         }
