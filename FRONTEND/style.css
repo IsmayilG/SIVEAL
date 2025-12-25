@@ -421,8 +421,8 @@ header {
 }
 
 .search-results {
-    position: absolute;
-    top: 100%;
+    position: fixed;
+    top: 70px;
     left: 0;
     right: 0;
     background: var(--bg-card);
@@ -437,6 +437,7 @@ header {
     transition: all 0.3s ease;
     z-index: 1000;
     margin-top: 8px;
+    backdrop-filter: blur(10px);
 }
 
 .search-results.show {
