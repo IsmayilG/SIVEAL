@@ -666,6 +666,9 @@
     </footer>
 
     <script>
+        // API Configuration
+        const API_BASE_URL = 'https://siveal-backend.onrender.com';
+
         // Security check - must be at the top
         (function() {
             // Use correct localStorage keys
@@ -721,6 +724,27 @@
             
             console.log('Access granted - Admin panel loaded successfully!');
         })();
+
+        // Enhanced authenticated request helper
+        function makeAuthenticatedRequest(url, options = {}) {
+            const token = localStorage.getItem('siveal_token');
+            
+            if (!token) {
+                console.warn('UYARI: Auth token bulunamadı');
+                throw new Error('No authentication token found');
+            }
+
+            const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+
+            return fetch(fullUrl, {
+                ...options,
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
+        }
 
         // Admin functionality
         let currentTab = 'dashboard';
