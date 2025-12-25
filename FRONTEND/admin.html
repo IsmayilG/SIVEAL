@@ -666,17 +666,11 @@
     </footer>
 
     <script>
-        // Debug: Show all localStorage keys before security check
-        (function() {
-            const keys = Object.keys(localStorage).join(", ");
-            alert("MEVCUT ANAHTARLAR: " + keys);
-        })();
-
         // Security check - must be at the top
         (function() {
-            // Try multiple token keys for compatibility
-            const token = localStorage.getItem('jwtToken') || localStorage.getItem('token');
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            // Use correct localStorage keys
+            const token = localStorage.getItem('siveal_token');
+            const user = JSON.parse(localStorage.getItem('siveal_user') || '{}');
             
             // Debug logging
             console.log('Admin Panel Security Check:');
