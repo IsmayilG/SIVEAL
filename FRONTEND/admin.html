@@ -766,7 +766,7 @@
                 console.log('Dashboard verileri yükleniyor...');
                 
                 // Load users count
-                const usersResponse = await makeAuthenticatedRequest('/api/users');
+                const usersResponse = await makeAuthenticatedRequest('/users');
                 const usersData = await usersResponse.json();
                 console.log('Gelen Kullanıcılar:', usersData);
                 
@@ -777,7 +777,7 @@
                 users = usersList;
 
                 // Load articles count and data
-                const articlesResponse = await makeAuthenticatedRequest('/api/articles');
+                const articlesResponse = await makeAuthenticatedRequest('/articles');
                 const articlesData = await articlesResponse.json();
                 console.log('Gelen Makaleler:', articlesData);
                 
@@ -842,7 +842,7 @@
 
         async function loadArticles() {
             try {
-                const response = await makeAuthenticatedRequest('/api/articles');
+                const response = await makeAuthenticatedRequest('/articles');
                 const data = await response.json();
                 console.log('Gelen Makaleler (Articles Tab):', data);
 
@@ -861,7 +861,7 @@
 
         async function loadUsers() {
             try {
-                const response = await makeAuthenticatedRequest('/api/users');
+                const response = await makeAuthenticatedRequest('/users');
                 const data = await response.json();
                 console.log('Gelen Kullanıcılar (Users Tab):', data);
 
