@@ -163,12 +163,19 @@ async function loadAdminDashboard() {
         const response = await makeAuthenticatedRequest('/api/admin/stats');
         const stats = await response.json();
 
-        document.getElementById('total-articles').textContent = stats.totalArticles || '0';
-        document.getElementById('total-users').textContent = stats.totalUsers || '0';
-        document.getElementById('total-views').textContent = (stats.totalViews || 0).toLocaleString();
+        // Safe element access for admin stats
+        const articlesEl = document.getElementById('total-articles');
+        if (articlesEl) articlesEl.textContent = stats.totalArticles || '0';
+
+        const usersEl = document.getElementById('total-users');
+        if (usersEl) usersEl.textContent = stats.totalUsers || '0';
+
+        const viewsEl = document.getElementById('total-views');
+        if (viewsEl) viewsEl.textContent = (stats.totalViews || 0).toLocaleString();
 
         // Show admin navigation
-        document.getElementById('admin-nav-btn').style.display = 'block';
+        const adminNavBtn = document.getElementById('admin-nav-btn');
+        if (adminNavBtn) adminNavBtn.style.display = 'block';
     } catch (error) {
         console.error('Error loading admin dashboard:', error);
         showMessage('Failed to load admin data', 'error');
@@ -180,49 +187,52 @@ async function loadProfileData() {
         const response = await makeAuthenticatedRequest('/api/profile');
         const profileData = await response.json();
 
-        // Update profile info with safe element access
+        // SAFE DOM ACCESS - Check each element before setting
+        // Looking for: profile-name, profile-email, profile-role, profile-joined, profile-last-login
+
         const nameEl = document.getElementById('profile-name');
         if (nameEl) {
             nameEl.textContent = profileData.username;
         } else {
-            console.warn('Warning: profile-name element not found');
+            console.warn('UYARI: profile-name elementi HTML\'de bulunamadı!');
         }
 
         const emailEl = document.getElementById('profile-email');
         if (emailEl) {
             emailEl.textContent = profileData.email;
         } else {
-            console.warn('Warning: profile-email element not found');
+            console.warn('UYARI: profile-email elementi HTML\'de bulunamadı!');
         }
 
         const roleEl = document.getElementById('profile-role');
         if (roleEl) {
             roleEl.textContent = profileData.role === 'admin' ? 'Administrator' : 'Member';
         } else {
-            console.warn('Warning: profile-role element not found');
+            console.warn('UYARI: profile-role elementi HTML\'de bulunamadı!');
         }
 
         const joinedEl = document.getElementById('profile-joined');
         if (joinedEl) {
             joinedEl.textContent = `Joined: ${new Date(profileData.createdAt).toLocaleDateString()}`;
         } else {
-            console.warn('Warning: profile-joined element not found');
+            console.warn('UYARI: profile-joined elementi HTML\'de bulunamadı!');
         }
 
-        const lastLoginEl = document.getElementById('profile-last-login');
-        if (lastLoginEl) {
-            lastLoginEl.textContent = profileData.lastLogin ?
-                `Last Login: ${new Date(profileData.lastLogin).toLocaleDateString()}` : 'Last Login: Never';
-        } else {
-            console.warn('Warning: profile-last-login element not found');
-        }
+        // profile-last-login element does not exist in HTML, skip safely
+        // const lastLoginEl = document.getElementById('profile-last-login');
+        // if (lastLoginEl) {
+        //     lastLoginEl.textContent = profileData.lastLogin ?
+        //         `Last Login: ${new Date(profileData.lastLogin).toLocaleDateString()}` : 'Last Login: Never';
+        // } else {
+        //     console.warn('UYARI: profile-last-login elementi HTML\'de bulunamadı!');
+        // }
 
-        // Update edit form with safe access
-        const editEmailEl = document.getElementById('edit-email');
-        if (editEmailEl) {
-            editEmailEl.value = profileData.email;
+        // Safe access for edit form - looking for edit-display-name (not edit-email)
+        const editNameEl = document.getElementById('edit-display-name');
+        if (editNameEl) {
+            editNameEl.value = profileData.username || '';
         } else {
-            console.warn('Warning: edit-email element not found');
+            console.warn('UYARI: edit-display-name elementi HTML\'de bulunamadı!');
         }
 
         // Show admin tab if user is admin
@@ -231,7 +241,7 @@ async function loadProfileData() {
             if (adminTab) {
                 adminTab.style.display = 'block';
             } else {
-                console.warn('Warning: admin tab element not found');
+                console.warn('UYARI: admin tab elementi HTML\'de bulunamadı!');
             }
         }
 
@@ -250,90 +260,111 @@ async function loadProfileData() {
 function setupProfileEditing() {
     const editForm = document.getElementById('profile-edit-form');
 
-    editForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    if (editForm) {
+        editForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-        const email = document.getElementById('edit-email').value.trim();
+            const displayName = document.getElementById('edit-display-name')?.value || '';
+            const bio = document.getElementById('edit-bio')?.value || '';
+            const website = document.getElementById('edit-website')?.value || '';
+            const location = document.getElementById('edit-location')?.value || '';
 
-        try {
-            setFormLoading('profile-edit-form', true);
+            try {
+                setFormLoading('profile-edit-form', true);
 
-            const response = await makeAuthenticatedRequest('/api/profile', {
-                method: 'PUT',
-                body: JSON.stringify({ email })
-            });
+                const response = await makeAuthenticatedRequest('/api/profile', {
+                    method: 'PUT',
+                    body: JSON.stringify({ displayName, bio, website, location })
+                });
 
-            const data = await response.json();
+                const data = await response.json();
 
-            if (response.ok) {
-                showMessage('Profile updated successfully!', 'success');
-                loadProfileData(); // Reload profile data
-            } else {
-                showMessage(data.error || 'Failed to update profile', 'error');
+                if (response.ok) {
+                    showMessage('Profile updated successfully!', 'success');
+                    loadProfileData(); // Reload profile data
+                } else {
+                    showMessage(data.error || 'Failed to update profile', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+            } finally {
+                setFormLoading('profile-edit-form', false);
             }
-        } catch (error) {
-            showMessage('Network error. Please try again.', 'error');
-        } finally {
-            setFormLoading('profile-edit-form', false);
-        }
-    });
+        });
+    } else {
+        console.warn('UYARI: profile-edit-form elementi HTML\'de bulunamadı!');
+    }
 }
 
 function setupPasswordChange() {
     const passwordForm = document.getElementById('password-change-form');
 
-    passwordForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-        const currentPassword = document.getElementById('current-password').value;
-        const newPassword = document.getElementById('new-password').value;
-        const confirmPassword = document.getElementById('confirm-new-password').value;
+            const currentPassword = document.getElementById('current-password')?.value || '';
+            const newPassword = document.getElementById('new-password')?.value || '';
+            const confirmPassword = document.getElementById('confirm-new-password')?.value || '';
 
-        if (newPassword !== confirmPassword) {
-            showMessage('New passwords do not match', 'error');
-            return;
-        }
-
-        if (newPassword.length < 6) {
-            showMessage('Password must be at least 6 characters', 'error');
-            return;
-        }
-
-        try {
-            setFormLoading('password-change-form', true);
-
-            const response = await makeAuthenticatedRequest('/api/profile', {
-                method: 'PUT',
-                body: JSON.stringify({ currentPassword, newPassword })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                showMessage('Password changed successfully!', 'success');
-                passwordForm.reset();
-            } else {
-                showMessage(data.error || 'Failed to change password', 'error');
+            if (newPassword !== confirmPassword) {
+                showMessage('New passwords do not match', 'error');
+                return;
             }
-        } catch (error) {
-            showMessage('Network error. Please try again.', 'error');
-        } finally {
-            setFormLoading('password-change-form', false);
-        }
-    });
+
+            if (newPassword.length < 6) {
+                showMessage('Password must be at least 6 characters', 'error');
+                return;
+            }
+
+            try {
+                setFormLoading('password-change-form', true);
+
+                const response = await makeAuthenticatedRequest('/api/profile', {
+                    method: 'PUT',
+                    body: JSON.stringify({ currentPassword, newPassword })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage('Password changed successfully!', 'success');
+                    passwordForm.reset();
+                } else {
+                    showMessage(data.error || 'Failed to change password', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+            } finally {
+                setFormLoading('password-change-form', false);
+            }
+        });
+    } else {
+        console.warn('UYARI: password-change-form elementi HTML\'de bulunamadı!');
+    }
 }
 
 function setFormLoading(formId, loading) {
     const form = document.getElementById(formId);
+    if (!form) {
+        console.warn(`UYARI: ${formId} form elementi HTML'de bulunamadı!`);
+        return;
+    }
+
     const submitBtn = form.querySelector('button[type="submit"]');
     const inputs = form.querySelectorAll('input');
 
-    submitBtn.disabled = loading;
-    inputs.forEach(input => input.disabled = loading);
+    if (submitBtn) {
+        submitBtn.disabled = loading;
+    }
 
-    if (loading) {
+    inputs.forEach(input => {
+        if (input) input.disabled = loading;
+    });
+
+    if (submitBtn && loading) {
         submitBtn.innerHTML = '<span class="loading-spinner"></span> Saving...';
-    } else {
+    } else if (submitBtn) {
         submitBtn.innerHTML = formId === 'profile-edit-form' ? 'Update Profile' : 'Change Password';
     }
 }
@@ -352,24 +383,31 @@ function showMessage(text, type) {
 
         if (container && profileContent) {
             // Insert before profile content if both exist
-            container.insertBefore(messageEl, profileContent);
+            try {
+                container.insertBefore(messageEl, profileContent);
+            } catch (e) {
+                console.warn('UYARI: insertBefore başarısız, fallback kullanıyorum:', e);
+                document.body.appendChild(messageEl);
+            }
         } else {
             // Fallback: append to body
-            console.warn('Warning: profile message container not found, using fallback');
+            console.warn('UYARI: Container bulunamadı, mesaj document.body\'ye eklenecek');
             document.body.appendChild(messageEl);
         }
     }
 
-    messageEl.textContent = text;
-    messageEl.className = `message ${type}`;
-    messageEl.style.display = 'block';
+    if (messageEl) {
+        messageEl.textContent = text;
+        messageEl.className = `message ${type}`;
+        messageEl.style.display = 'block';
 
-    // Auto-hide after 5 seconds
-    setTimeout(() => {
-        if (messageEl) {
-            messageEl.style.display = 'none';
-        }
-    }, 5000);
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            if (messageEl) {
+                messageEl.style.display = 'none';
+            }
+        }, 5000);
+    }
 }
 
 function goToAdminPanel() {
