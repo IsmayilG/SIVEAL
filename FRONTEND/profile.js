@@ -3,6 +3,10 @@
 // Tüm DOM erişimleri güvenli, hiçbir çökme olmayacak
 // ==========================================
 
+// CLOUDINARY CONSTANTS - Replace with your own values
+const CLOUDINARY_CLOUD_NAME = 'YOUR_CLOUD_NAME';
+const CLOUDINARY_UPLOAD_PRESET = 'YOUR_UPLOAD_PRESET';
+
 // Global değişkenler - güvenli başlatma
 let currentUser = null;
 let currentTab = 'overview';
@@ -339,6 +343,35 @@ function setupProfileEditing() {
         return;
     }
 
+    // Avatar upload functionality
+    const avatarEditBtn = safeGetElement('avatar-edit-btn');
+    const avatarInput = document.createElement('input');
+    avatarInput.type = 'file';
+    avatarInput.accept = 'image/*';
+    avatarInput.style.display = 'none';
+    
+    if (avatarEditBtn) {
+        avatarEditBtn.addEventListener('click', () => {
+            avatarInput.click();
+        });
+    }
+    
+    avatarInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        try {
+            const imageUrl = await uploadImageToCloudinary(file);
+            if (imageUrl) {
+                await updateProfileAvatar(imageUrl);
+                loadProfileData(); // Reload profile data to update avatar
+            }
+        } catch (error) {
+            console.error('AVATAR UPLOAD HATASI:', error);
+            safeShowMessage('Failed to upload avatar. Please try again.', 'error');
+        }
+    });
+
     safeAddEventListener('profile-edit-form', 'submit', async (e) => {
         e.preventDefault();
 
@@ -371,6 +404,54 @@ function setupProfileEditing() {
             setFormLoading('profile-edit-form', false);
         }
     });
+}
+
+// Cloudinary upload function
+async function uploadImageToCloudinary(file) {
+    if (!CLOUDINARY_CLOUD_NAME || CLOUDINARY_CLOUD_NAME === 'YOUR_CLOUD_NAME') {
+        throw new Error('Cloudinary Cloud Name not configured');
+    }
+    
+    if (!CLOUDINARY_UPLOAD_PRESET || CLOUDINARY_UPLOAD_PRESET === 'YOUR_UPLOAD_PRESET') {
+        throw new Error('Cloudinary Upload Preset not configured');
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+        method: 'POST',
+        body: formData
+    });
+
+    if (!response.ok) {
+        throw new Error(`Cloudinary upload failed: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result.secure_url;
+}
+
+// Update profile avatar
+async function updateProfileAvatar(imageUrl) {
+    try {
+        const response = await makeAuthenticatedRequest('/api/profile', {
+            method: 'PUT',
+            body: JSON.stringify({ avatar: imageUrl })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            safeShowMessage('Avatar updated successfully!', 'success');
+        } else {
+            throw new Error(data.error || 'Failed to update avatar');
+        }
+    } catch (error) {
+        console.error('AVATAR UPDATE HATASI:', error);
+        throw error;
+    }
 }
 
 function setupPasswordChange() {

@@ -756,6 +756,171 @@
             if (tabName === 'users') loadUsers();
         }
 
+        // Load dashboard data from backend
+        async function loadDashboardData() {
+            try {
+                // Load users count
+                const usersResponse = await makeAuthenticatedRequest('/api/users');
+                const usersData = await usersResponse.json();
+                const usersCount = usersData.length || 0;
+                safeUpdateElement('stat-total-users', 'textContent', usersCount.toString());
+
+                // Load articles count and data
+                const articlesResponse = await makeAuthenticatedRequest('/api/articles');
+                const articlesData = await articlesResponse.json();
+                const articlesCount = articlesData.length || 0;
+                safeUpdateElement('stat-total-articles', 'textContent', articlesCount.toString());
+
+                // Calculate total views
+                const totalViews = articlesData.reduce((sum, article) => sum + (article.views || 0), 0);
+                safeUpdateElement('stat-total-views', 'textContent', totalViews.toLocaleString());
+
+                // Calculate recent comments (mock data for now)
+                const recentComments = Math.floor(Math.random() * 20) + 5;
+                safeUpdateElement('stat-recent-comments', 'textContent', recentComments.toString());
+
+                // Store data for other tabs
+                users = usersData;
+                articles = articlesData;
+
+                console.log('Dashboard data loaded successfully');
+            } catch (error) {
+                console.error('DASHBOARD DATA HATASI:', error);
+                safeShowMessage('Failed to load dashboard data', 'error');
+            }
+        }
+
+        // Load articles from backend
+        async function loadArticles() {
+            try {
+                const response = await makeAuthenticatedRequest('/api/articles');
+                const data = await response.json();
+
+                if (response.ok) {
+                    articles = data;
+                    renderArticlesTable();
+                } else {
+                    throw new Error(data.error || 'Failed to load articles');
+                }
+            } catch (error) {
+                console.error('ARTICLES LOAD HATASI:', error);
+                safeShowMessage('Failed to load articles', 'error');
+            }
+        }
+
+        // Load users from backend
+        async function loadUsers() {
+            try {
+                const response = await makeAuthenticatedRequest('/api/users');
+                const data = await response.json();
+
+                if (response.ok) {
+                    users = data;
+                    renderUsersTable();
+                } else {
+                    throw new Error(data.error || 'Failed to load users');
+                }
+            } catch (error) {
+                console.error('USERS LOAD HATASI:', error);
+                safeShowMessage('Failed to load users', 'error');
+            }
+        }
+
+        // Render articles table with backend data
+        function renderArticlesTable() {
+            const tbody = document.getElementById('articles-table-body');
+            tbody.innerHTML = '';
+            
+            articles.forEach(article => {
+                const tr = document.createElement('tr');
+                const formattedDate = formatDate(article.createdAt || article.date);
+                tr.innerHTML = `
+                    <td>${article.title || 'Untitled'}</td>
+                    <td><span class="status-badge">${article.category || 'Uncategorized'}</span></td>
+                    <td>${article.author || 'Unknown'}</td>
+                    <td><span class="status-badge status-${article.status || 'draft'}">${article.status || 'draft'}</span></td>
+                    <td>${(article.views || 0).toLocaleString()}</td>
+                    <td class="action-buttons">
+                        <button class="btn-icon edit" onclick="editArticle(${article.id})">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                            </svg>
+                        </button>
+                        <button class="btn-icon delete" onclick="deleteArticle(${article.id})">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                            </svg>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Render users table with backend data
+        function renderUsersTable() {
+            const tbody = document.getElementById('users-table-body');
+            tbody.innerHTML = '';
+            
+            users.forEach(user => {
+                const tr = document.createElement('tr');
+                const formattedDate = formatDate(user.createdAt || user.joined);
+                tr.innerHTML = `
+                    <td>${user.name || user.username || 'Unknown'}</td>
+                    <td>${user.email || 'No email'}</td>
+                    <td><span class="status-badge">${user.role || 'user'}</span></td>
+                    <td>${formattedDate}</td>
+                    <td><span class="status-badge status-${user.status || 'active'}">${user.status || 'active'}</span></td>
+                    <td class="action-buttons">
+                        <button class="btn-icon edit" onclick="editUser(${user.id})">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                            </svg>
+                        </button>
+                        <button class="btn-icon delete" onclick="deleteUser(${user.id})">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                            </svg>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Format date function
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            } catch (e) {
+                return dateString;
+            }
+        }
+
+        // Safe element update function
+        function safeUpdateElement(id, property, value) {
+            const el = document.getElementById(id);
+            if (el && el[property] !== undefined) {
+                try {
+                    el[property] = value;
+                } catch (e) {
+                    console.warn(`UYARI: Element '${id}' güncellenirken hata:`, e);
+                }
+            }
+        }
+
+        // Safe message show function
+        function safeShowMessage(text, type) {
+            if (!text) return;
+            console.log(`${type.toUpperCase()}: ${text}`);
+        }
+
         // Article management
         function showAddArticleForm() {
             document.getElementById('form-title').textContent = 'Add New Article';
