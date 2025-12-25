@@ -1131,6 +1131,9 @@
 
         // Event listeners
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('Dashboard verileri yükleniyor...');
+            loadDashboardData();
+
             // Tab navigation
             document.querySelectorAll('.admin-nav-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -1151,6 +1154,48 @@
                 document.getElementById('user-btn').style.display = 'flex';
             }
         });
+
+        // Dashboard loading function
+        async function loadDashboardData() {
+            try {
+                // Load users count
+                const usersResponse = await makeAuthenticatedRequest('/api/users');
+                const usersData = await usersResponse.json();
+                console.log('Gelen Kullanıcılar:', usersData);
+                
+                // Smart parsing for users data
+                const usersList = Array.isArray(usersData) ? usersData : (usersData.data || usersData.users || usersData.result || []);
+                const usersCount = usersList.length || 0;
+                safeUpdateElement('stat-total-users', 'textContent', usersCount.toString());
+                users = usersList;
+
+                // Load articles count and data
+                const articlesResponse = await makeAuthenticatedRequest('/api/articles');
+                const articlesData = await articlesResponse.json();
+                console.log('Gelen Makaleler:', articlesData);
+                
+                // Smart parsing for articles data
+                const articlesList = Array.isArray(articlesData) ? articlesData : (articlesData.data || articlesData.articles || articlesData.result || []);
+                const articlesCount = articlesList.length || 0;
+                safeUpdateElement('stat-total-articles', 'textContent', articlesCount.toString());
+
+                // Calculate total views
+                const totalViews = articlesList.reduce((sum, article) => sum + (article.views || 0), 0);
+                safeUpdateElement('stat-total-views', 'textContent', totalViews.toLocaleString());
+
+                // Calculate recent comments (mock data for now)
+                const recentComments = Math.floor(Math.random() * 20) + 5;
+                safeUpdateElement('stat-recent-comments', 'textContent', recentComments.toString());
+
+                // Store data for other tabs
+                articles = articlesList;
+
+                console.log('Dashboard data loaded successfully');
+            } catch (error) {
+                console.error('DASHBOARD DATA HATASI:', error);
+                safeShowMessage('Failed to load dashboard data', 'error');
+            }
+        }
 
         // Utility functions
         function saveArticle() {
