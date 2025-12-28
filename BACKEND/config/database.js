@@ -14,6 +14,27 @@ const seedInitialData = async () => {
         } else {
             console.log(`Veritabanında ${count} haber mevcut.`);
         }
+
+        // Seed admin user
+        const User = require('../models/User');
+        const bcrypt = require('bcryptjs');
+        const adminExists = await User.findOne({ username: 'admin' });
+        
+        if (!adminExists) {
+            console.log('Admin kullanıcı oluşturuluyor...');
+            const hashedPassword = await bcrypt.hash('Admin123!', 10);
+            await User.create({
+                id: 1,
+                username: 'admin',
+                email: 'admin@siveal.com',
+                password: hashedPassword,
+                firstName: 'System',
+                lastName: 'Administrator',
+                role: 'admin',
+                isActive: true
+            });
+            console.log('Admin kullanıcı oluşturuldu! (admin / Admin123!)');
+        }
     } catch (error) {
         console.error('Seed hatası:', error.message);
     }
