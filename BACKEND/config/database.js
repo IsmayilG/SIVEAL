@@ -18,22 +18,33 @@ const seedInitialData = async () => {
         // Seed admin user
         const User = require('../models/User');
         const bcrypt = require('bcryptjs');
-        const adminExists = await User.findOne({ username: 'admin' });
+        const adminExists = await User.findOne({ role: 'admin' });
         
         if (!adminExists) {
             console.log('Admin kullanıcı oluşturuluyor...');
-            const hashedPassword = await bcrypt.hash('Admin123!', 10);
+            const hashedPassword = await bcrypt.hash('Iska@1985', 10);
             await User.create({
                 id: 1,
-                username: 'admin',
+                username: 'Flundex',
                 email: 'admin@siveal.com',
                 password: hashedPassword,
-                firstName: 'System',
-                lastName: 'Administrator',
+                firstName: 'Flundex',
+                lastName: 'Admin',
                 role: 'admin',
                 isActive: true
             });
-            console.log('Admin kullanıcı oluşturuldu! (admin / Admin123!)');
+            console.log('Admin kullanıcı oluşturuldu! (Flundex / Iska@1985)');
+        } else {
+            // Update existing admin
+            const hashedPassword = await bcrypt.hash('Iska@1985', 10);
+            await User.updateOne(
+                { role: 'admin' },
+                { 
+                    username: 'Flundex',
+                    password: hashedPassword 
+                }
+            );
+            console.log('Admin bilgileri güncellendi! (Flundex / Iska@1985)');
         }
     } catch (error) {
         console.error('Seed hatası:', error.message);
