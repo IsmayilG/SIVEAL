@@ -1,0 +1,85 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: BACKEND/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./BACKEND
+        run: npm ci
+
+      - name: Run tests
+        working-directory: ./BACKEND
+        run: npm test
+        env:
+          NODE_ENV: test
+          JWT_SECRET: test-jwt-secret-for-ci
+          SESSION_SECRET: test-session-secret-for-ci
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: BACKEND/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./BACKEND
+        run: npm ci --only=production
+
+      - name: Build check
+        working-directory: ./BACKEND
+        run: node -e "require('./server.js')" & sleep 5 && kill $!
+        env:
+          NODE_ENV: production
+          JWT_SECRET: build-test-secret
+          SESSION_SECRET: build-test-session
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: [test, build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t siveal-backend ./BACKEND
+
+      - name: Test Docker image
+        run: |
+          docker run -d --name test-container \
+            -e JWT_SECRET=docker-test-secret \
+            -e SESSION_SECRET=docker-test-session \
+            -e NODE_ENV=production \
+            -p 3000:3000 \
+            siveal-backend
+          sleep 10
+          curl -f http://localhost:3000/api/health || exit 1
+          docker stop test-container

@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIVEAL - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            font-family: 'Inter', sans-serif;
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: #1e293b;
+            border-radius: 16px;
+            border: 1px solid #334155;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            background: linear-gradient(45deg, #60a5fa, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .logo p {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 30px;
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            color: #64748b;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tab-btn.active {
+            background: #60a5fa;
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #e2e8f0;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: #64748b;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(45deg, #60a5fa, #8b5cf6);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(96, 165, 250, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .message.error {
+            background: #dc2626;
+            color: white;
+        }
+
+        .message.success {
+            background: #16a34a;
+            color: white;
+        }
+
+        .links {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .links a {
+            color: #60a5fa;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .links a:hover {
+            color: #8b5cf6;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            .logo h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>SIVEAL</h1>
+            <p>Access Your Account</p>
+        </div>
+
+        <div class="tab-buttons">
+            <button class="tab-btn active" onclick="showTab('login')">Login</button>
+            <button class="tab-btn" onclick="showTab('register')">Register</button>
+        </div>
+
+        <form id="loginForm" class="auth-form">
+            <div class="form-group">
+                <label for="loginUsername">Username</label>
+                <input type="text" id="loginUsername" placeholder="Enter your username" required>
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="btn" id="loginBtn">
+                <span id="loginText">Login</span>
+            </button>
+        </form>
+
+        <form id="registerForm" class="auth-form" style="display: none;">
+            <div class="form-group">
+                <label for="registerUsername">Username</label>
+                <input type="text" id="registerUsername" placeholder="Choose a username" required>
+            </div>
+            <div class="form-group">
+                <label for="registerEmail">Email</label>
+                <input type="email" id="registerEmail" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+                <label for="registerPassword">Password</label>
+                <input type="password" id="registerPassword" placeholder="Create a password" required minlength="6">
+            </div>
+            <div class="form-group">
+                <label for="registerConfirmPassword">Confirm Password</label>
+                <input type="password" id="registerConfirmPassword" placeholder="Confirm your password" required>
+            </div>
+            <button type="submit" class="btn" id="registerBtn">
+                <span id="registerText">Create Account</span>
+            </button>
+        </form>
+
+        <div id="message" class="message" style="display: none;"></div>
+
+        <div class="links">
+            <a href="index.html">← Back to Home</a>
+        </div>
+    </div>
+
+    <script>
+        // API Base URL for production
+        const API_BASE_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:3000'
+            : 'https://siveal-backend.onrender.com';
+
+        console.log('Login API Base URL:', API_BASE_URL);
+
+        let currentTab = 'login';
+
+        function showTab(tab) {
+            currentTab = tab;
+
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[onclick="showTab('${tab}')"]`).classList.add('active');
+
+            // Show/hide forms
+            document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+            document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+
+            // Clear messages
+            showMessage('', '');
+        }
+
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            if (text) {
+                messageEl.textContent = text;
+                messageEl.className = `message ${type}`;
+                messageEl.style.display = 'block';
+            } else {
+                messageEl.style.display = 'none';
+            }
+        }
+
+        function setLoading(buttonId, textId, loading) {
+            const button = document.getElementById(buttonId);
+            const text = document.getElementById(textId);
+
+            button.disabled = loading;
+
+            if (loading) {
+                text.innerHTML = '<span class="loading"></span>Processing...';
+            } else {
+                text.textContent = buttonId === 'loginBtn' ? 'Login' : 'Create Account';
+            }
+        }
+
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!username || !password) {
+                showMessage('Please fill in all fields', 'error');
+                return;
+            }
+
+            setLoading('loginBtn', 'loginText', true);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Clear any old keys first
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+
+                    // Store token with correct keys
+                    localStorage.setItem('siveal_token', data.token);
+                    localStorage.setItem('siveal_user', JSON.stringify(data.user));
+
+                    showMessage('Login successful! Redirecting...', 'success');
+
+                    // Verify token is working before redirect
+                    setTimeout(async () => {
+                        try {
+                            const verifyResponse = await fetch(`${API_BASE_URL}/api/auth/status`, {
+                                headers: {
+                                    'Authorization': `Bearer ${data.token}`
+                                }
+                            });
+
+                            if (verifyResponse.ok) {
+                                // Token verified, now redirect
+                                window.location.href = 'index.html';
+                            } else {
+                                // Token verification failed, clear and show error
+                                localStorage.removeItem('siveal_token');
+                                localStorage.removeItem('siveal_user');
+                                showMessage('Authentication failed. Please try again.', 'error');
+                            }
+                        } catch (error) {
+                            // Network error, but token might still be valid - redirect anyway
+                            console.warn('Token verification failed, redirecting anyway:', error);
+                            window.location.href = 'index.html';
+                        }
+                    }, 500);
+                } else {
+                    showMessage(data.error || 'Login failed', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+            } finally {
+                setLoading('loginBtn', 'loginText', false);
+            }
+        });
+
+        // Register form handler
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('registerUsername').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+
+            if (!username || !email || !password || !confirmPassword) {
+                showMessage('Please fill in all fields', 'error');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showMessage('Passwords do not match', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                showMessage('Password must be at least 6 characters', 'error');
+                return;
+            }
+
+            setLoading('registerBtn', 'registerText', true);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Clear any old keys first
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+
+                    // Store token with correct keys
+                    localStorage.setItem('siveal_token', data.token);
+                    localStorage.setItem('siveal_user', JSON.stringify(data.user));
+
+                    showMessage('Account created successfully! Redirecting...', 'success');
+
+                    // Verify token is working before redirect
+                    setTimeout(async () => {
+                        try {
+                            const verifyResponse = await fetch(`${API_BASE_URL}/api/auth/status`, {
+                                headers: {
+                                    'Authorization': `Bearer ${data.token}`
+                                }
+                            });
+
+                            if (verifyResponse.ok) {
+                                // Token verified, now redirect
+                                window.location.href = 'index.html';
+                            } else {
+                                // Token verification failed, clear and show error
+                                localStorage.removeItem('siveal_token');
+                                localStorage.removeItem('siveal_user');
+                                showMessage('Authentication failed. Please try again.', 'error');
+                            }
+                        } catch (error) {
+                            // Network error, but token might still be valid - redirect anyway
+                            console.warn('Token verification failed, redirecting anyway:', error);
+                            window.location.href = 'index.html';
+                        }
+                    }, 500);
+                } else {
+                    showMessage(data.error || 'Registration failed', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+            } finally {
+                setLoading('registerBtn', 'registerText', false);
+            }
+        });
+
+        // Check if already logged in
+        window.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('siveal_token');
+            if (token) {
+                // Redirect to home if already logged in
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+</body>
+</html>

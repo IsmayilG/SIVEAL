@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIVEAL | Global Tech Wire - Latest Technology News & Innovation</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="SIVEAL Global Tech Wire - Your premier destination for the latest technology news, AI innovations, cryptocurrency updates, enterprise solutions, and scientific breakthroughs. Stay ahead with our comprehensive tech coverage.">
+    <meta name="keywords" content="technology news, AI, artificial intelligence, robotics, cryptocurrency, blockchain, enterprise tech, science, innovation, tech wire, SIVEAL">
+    <meta name="author" content="SIVEAL Inc">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://siveal.com">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://siveal.com">
+    <meta property="og:title" content="SIVEAL | Global Tech Wire - Latest Technology News & Innovation">
+    <meta property="og:description" content="Your premier destination for the latest technology news, AI innovations, cryptocurrency updates, enterprise solutions, and scientific breakthroughs.">
+    <meta property="og:image" content="https://siveal.com/images/siveal-og-image.jpg">
+    <meta property="og:site_name" content="SIVEAL Global Tech Wire">
+    
+    <!-- Twitter Card -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://siveal.com">
+    <meta property="twitter:title" content="SIVEAL | Global Tech Wire - Latest Technology News & Innovation">
+    <meta property="twitter:description" content="Your premier destination for the latest technology news, AI innovations, cryptocurrency updates, enterprise solutions, and scientific breakthroughs.">
+    <meta property="twitter:image" content="https://siveal.com/images/siveal-twitter-image.jpg">
+    
+    <!-- Additional SEO -->
+    <meta name="theme-color" content="#60a5fa">
+    <meta name="msapplication-TileColor" content="#60a5fa">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-EVW48GSCS0"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-EVW48GSCS0');
+        
+        // Custom analytics tracking
+        function trackEvent(action, category, label) {
+            gtag('event', action, {
+                event_category: category,
+                event_label: label,
+                custom_parameter: 'SIVEAL'
+            });
+        }
+        
+        // Track page views
+        gtag('event', 'page_view', {
+            page_title: document.title,
+            page_location: window.location.href,
+            content_group1: 'SIVEAL Tech Wire'
+        });
+    </script>
+    
+    <!-- Fonts and Styles -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header id="main-header">
+        <div class="header-particles">
+            <div class="header-particle"></div>
+            <div class="header-particle"></div>
+            <div class="header-particle"></div>
+            <div class="header-particle"></div>
+            <div class="header-particle"></div>
+        </div>
+        <div class="header-circuit"></div>
+
+        <div class="container navbar">
+            <a href="#" class="brand">
+                <div class="logo-svg">
+                    <svg viewBox="0 0 100 100" fill="none">
+                        <path d="M30 20 C 30 20, 80 20, 80 50 C 80 80, 20 80, 20 50 C 20 30, 50 20, 50 80"
+                            stroke="#60a5fa" stroke-width="8" stroke-linecap="round" fill="none" />
+                        <path d="M30 50 L 50 80 L 70 50" stroke="#60a5fa" stroke-width="8" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <span>SIVEAL</span>
+            </a>
+
+            <nav class="nav-links">
+                <a href="index.html" data-category="all" data-translate="nav-all">All</a>
+                <a href="index.html" data-category="AI & Robotics" data-translate="nav-ai">AI & Robotics</a>
+                <a href="index.html" data-category="Enterprise" data-translate="nav-enterprise">Enterprise</a>
+                <a href="index.html" data-category="Crypto" data-translate="nav-crypto">Crypto</a>
+                <a href="index.html" data-category="Science" data-translate="nav-science">Science</a>
+            </nav>
+
+            <div class="header-actions">
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Search articles..." class="search-input">
+                    <button class="search-btn" id="search-toggle">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </button>
+                    <div class="search-results" id="search-results">
+                    </div>
+                </div>
+
+
+
+                <button class="theme-toggle" id="theme-toggle">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"/>
+                    </svg>
+                </button>
+
+                <div class="language-selector">
+                    <button class="lang-btn active" data-lang="en">EN</button>
+                    <button class="lang-btn" data-lang="tr">TR</button>
+                    <button class="lang-btn" data-lang="az">AZ</button>
+                    <button class="lang-btn" data-lang="ru">RU</button>
+                </div>
+
+                <button class="mobile-menu-btn" id="mobile-toggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
+                <!-- Fallback login button - hidden by default -->
+                <a href="login.html" class="btn-login" id="fallback-login-btn" style="display: none;">Login</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="floating-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="circuit-overlay"></div>
+
+    <div class="light-beam"></div>
+    <div class="light-beam"></div>
+    <div class="light-beam"></div>
+    <div class="light-beam"></div>
+
+    <div class="data-stream">
+        01010100 01100101 01100011 01101000<br>
+        01101110 01101111 01101100 01101111 01100111 01111001<br>
+        00100000 00101100 00100000 01001001 01001110 01001110 01001111 01010110 01000001 01010100 01001001 01001111 01001110
+    </div>
+
+    <div class="container">
+        <div class="ad-banner-top">
+            <span class="ad-label">Advertisement</span>
+        </div>
+
+        <section class="hero-section">
+            <div class="hero-carousel">
+                <div class="carousel-container" id="carousel-container">
+                </div>
+
+                <div class="carousel-controls">
+                    <button class="carousel-btn prev-btn" id="prev-btn">‹</button>
+                    <button class="carousel-btn next-btn" id="next-btn">›</button>
+                </div>
+
+                <div class="carousel-indicators" id="carousel-indicators">
+                </div>
+
+
+            </div>
+        </section>
+
+        <div class="main-layout">
+            <main class="feed">
+            <div class="section-header">
+                    <h2 data-translate="latest-wire">Latest Wire</h2>
+                    <div class="divider"></div>
+                </div>
+
+                <div class="news-grid" id="news-container">
+                </div>
+
+                <div class="pagination" id="pagination">
+                </div>
+            </main>
+
+            <aside class="sidebar">
+                <div class="widget ad-widget">
+                    <span class="ad-label">Sponsored</span>
+                    <div class="ad-box-rect"></div>
+                </div>
+
+                <div class="widget trend-widget">
+                    <h3 data-translate="trending">Trending</h3>
+                    <ul class="trend-list">
+                        <li>
+                            <span class="number">01</span>
+                            <a href="#">GPT-5 Rumors</a>
+                        </li>
+                        <li>
+                            <span class="number">02</span>
+                            <a href="#">Apple Vision Pro Reviews</a>
+                        </li>
+                        <li>
+                            <span class="number">03</span>
+                            <a href="#">SpaceX Starship Launch</a>
+                        </li>
+                        <li>
+                            <span class="number">04</span>
+                            <a href="#">Nvidia Earnings Call</a>
+                        </li>
+                        <li>
+                            <span class="number">05</span>
+                            <a href="#">Quantum Computing Breakthrough</a>
+                        </li>
+                    </ul>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-brand">
+                <h3>SIVEAL</h3>
+                <p>Global Tech Wire</p>
+            </div>
+            <div class="footer-links">
+                <a href="about.html" data-translate="about">About</a>
+                <a href="advertise.html" data-translate="advertise">Advertise</a>
+                <a href="privacy.html" data-translate="privacy">Privacy</a>
+                <a href="terms.html" data-translate="terms">Terms</a>
+                <a href="contact.html" data-translate="contact">Contact</a>
+                <a href="rss.xml" target="_blank" data-translate="rss-feed">RSS Feed</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 SIVEAL Inc. All rights reserved.</p>
+        </div>
+    </footer>
+
+
+
+    <script src="script.js?v=1.4"></script>
+</body>
+
+</html>

@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - SIVEAL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Profile-specific styles */
+        .profile-header {
+            position: relative;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+
+        .logout-section-top {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+        }
+
+        .btn-logout-modern {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-logout-modern:hover {
+            background: #ef4444;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .profile-avatar {
+            position: relative;
+            display: inline-block;
+            margin-right: 32px;
+        }
+
+        .profile-avatar img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid var(--primary);
+            box-shadow: 0 8px 24px rgba(96, 165, 250, 0.3);
+            transition: transform 0.3s ease;
+            object-fit: cover;
+            width: 100%;
+            height: 100%;
+        }
+
+        .profile-avatar:hover img {
+            transform: scale(1.05);
+        }
+
+        .avatar-edit-btn {
+            position: absolute;
+            bottom: -10px;
+            right: -10px;
+            background: var(--primary);
+            color: black;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .profile-avatar:hover .avatar-edit-btn {
+            opacity: 1;
+        }
+
+        .profile-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .profile-info h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .profile-info p {
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .profile-role {
+            display: inline-block;
+            background: var(--primary);
+            color: black;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <header id="main-header">
+        <div class="container navbar">
+            <a href="index.html" class="brand">
+                <div class="logo-svg">
+                    <svg viewBox="0 0 100 100" fill="none">
+                        <path d="M30 20 C 30 20, 80 20, 80 50 C 80 80, 20 80, 20 50 C 20 30, 50 20, 50 80"
+                            stroke="#60a5fa" stroke-width="8" stroke-linecap="round" fill="none" />
+                        <path d="M30 50 L 50 80 L 70 50" stroke="#60a5fa" stroke-width="8" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <span>SIVEAL</span>
+            </a>
+
+            <nav class="nav-links">
+                <a href="index.html" data-category="all">All</a>
+                <a href="index.html" data-category="AI & Robotics">AI & Robotics</a>
+                <a href="index.html" data-category="Enterprise">Enterprise</a>
+                <a href="index.html" data-category="Crypto">Crypto</a>
+                <a href="index.html" data-category="Science">Science</a>
+            </nav>
+
+            <div class="header-actions">
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Search articles..." class="search-input">
+                    <button class="search-btn" id="search-toggle">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </button>
+                    <div class="search-results" id="search-results">
+                        <!-- Search results will appear here -->
+                    </div>
+                </div>
+                <a href="#" class="btn-login" id="loginBtn">Profile</a>
+                <button class="theme-toggle" id="theme-toggle">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"/>
+                    </svg>
+                </button>
+                <button class="mobile-menu-btn" id="mobile-toggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+            <div class="profile-container">
+                <div class="profile-header">
+                    <!-- Logout Button at the top -->
+                    <div class="logout-section-top">
+                        <button id="logout-btn-top" class="btn-logout-modern">Çıkış Yap</button>
+                    </div>
+
+                    <div class="profile-avatar">
+                        <img id="profile-avatar" src="https://picsum.photos/150/150?random=999" alt="Profile Picture">
+                        <button class="avatar-edit-btn" id="avatar-edit-btn">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="profile-info">
+                        <h1 id="profile-name">Loading...</h1>
+                        <p id="profile-email">Loading...</p>
+                        <p id="profile-role" class="profile-role">User</p>
+                        <p id="profile-joined">Joined: Loading...</p>
+                    </div>
+                </div>
+
+            <div class="profile-content">
+                <div class="profile-sidebar">
+                    <div class="profile-nav">
+                        <button class="profile-nav-btn active" data-tab="overview">Overview</button>
+                        <button class="profile-nav-btn" data-tab="edit">Edit Profile</button>
+                        <button class="profile-nav-btn" data-tab="security">Security</button>
+                        <button class="profile-nav-btn" data-tab="activity">Activity</button>
+                        <button class="profile-nav-btn admin-only" id="admin-nav-btn" data-tab="admin" style="display: none;">Admin Panel</button>
+                    </div>
+                </div>
+
+                <div class="profile-main">
+                    <div id="overview-tab" class="profile-tab active">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-number" id="articles-read">0</div>
+                                <div class="stat-label">Articles Read</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="comments-posted">0</div>
+                                <div class="stat-label">Comments Posted</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="account-age">0</div>
+                                <div class="stat-label">Days Active</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="favorite-category">-</div>
+                                <div class="stat-label">Favorite Category</div>
+                            </div>
+                        </div>
+
+                        <div class="recent-activity">
+                            <h3>Recent Activity</h3>
+                            <div id="recent-activity-list">
+                                <p>No recent activity</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="edit-tab" class="profile-tab">
+                        <form id="profile-edit-form">
+                            <div class="form-group">
+                                <label>Display Name</label>
+                                <input type="text" id="edit-display-name" placeholder="Your display name">
+                            </div>
+                            <div class="form-group">
+                                <label>Bio</label>
+                                <textarea id="edit-bio" rows="4" placeholder="Tell us about yourself..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Website</label>
+                                <input type="url" id="edit-website" placeholder="https://yourwebsite.com">
+                            </div>
+                            <div class="form-group">
+                                <label>Location</label>
+                                <input type="text" id="edit-location" placeholder="City, Country">
+                            </div>
+                            <button type="submit" class="btn-primary">Save Changes</button>
+                            <div id="edit-status" class="form-status"></div>
+                        </form>
+                    </div>
+
+                    <div id="security-tab" class="profile-tab">
+                        <form id="password-change-form">
+                            <div class="form-group">
+                                <label>Current Password</label>
+                                <input type="password" id="current-password" required>
+                            </div>
+                            <div class="form-group">
+                                <label>New Password</label>
+                                <input type="password" id="new-password" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Confirm New Password</label>
+                                <input type="password" id="confirm-new-password" required>
+                            </div>
+                            <button type="submit" class="btn-primary">Change Password</button>
+                            <div id="password-status" class="form-status"></div>
+                        </form>
+                    </div>
+
+                    <div id="activity-tab" class="profile-tab">
+                        <div class="activity-filters">
+                            <button class="filter-btn active" data-filter="all">All Activity</button>
+                            <button class="filter-btn" data-filter="articles">Articles Read</button>
+                            <button class="filter-btn" data-filter="comments">Comments</button>
+                            <button class="filter-btn" data-filter="likes">Likes</button>
+                        </div>
+                        <div id="activity-list" class="activity-list">
+                            <p>No activity found</p>
+                        </div>
+
+                        <!-- Admin Panel Button (only for admins) -->
+                        <div id="admin-panel-section" class="admin-panel-section" style="display: none;">
+                            <div class="admin-panel-card">
+                                <h4>🛠️ Admin Panel</h4>
+                                <p>Manage news articles, users, and site settings</p>
+                                <button onclick="goToAdminPanel()" class="btn-admin">Go to Admin Panel</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="admin-tab" class="profile-tab">
+                        <div class="admin-dashboard">
+                            <h3>Admin Dashboard</h3>
+                            <div class="admin-stats">
+                                <div class="admin-stat-card">
+                                    <div class="admin-stat-number" id="total-articles">Loading...</div>
+                                    <div class="admin-stat-label">Total Articles</div>
+                                </div>
+                                <div class="admin-stat-card">
+                                    <div class="admin-stat-number" id="total-users">Loading...</div>
+                                    <div class="admin-stat-label">Total Users</div>
+                                </div>
+                                <div class="admin-stat-card">
+                                    <div class="admin-stat-number" id="total-views">Loading...</div>
+                                    <div class="admin-stat-label">Total Views</div>
+                                </div>
+                                <div class="admin-stat-card">
+                                    <div class="admin-stat-number" id="recent-comments">Loading...</div>
+                                    <div class="admin-stat-label">Recent Comments</div>
+                                </div>
+                            </div>
+
+                            <div class="admin-actions">
+                                <button onclick="goToAdminPanel()" class="btn-admin-full">Open Full Admin Panel</button>
+                                <div class="admin-quick-links">
+                                    <h4>Quick Actions</h4>
+                                    <button onclick="window.location.href='/admin'" class="admin-quick-btn">📝 Manage Articles</button>
+                                    <button onclick="window.location.href='/admin'" class="admin-quick-btn">👥 User Management</button>
+                                    <button onclick="window.location.href='/admin'" class="admin-quick-btn">📊 View Analytics</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-brand">
+                <h3>SIVEAL</h3>
+                <p>Global Tech Wire</p>
+            </div>
+            <div class="footer-links">
+                <a href="about.html">About</a>
+                <a href="advertise.html">Advertise</a>
+                <a href="privacy.html">Privacy</a>
+                <a href="terms.html">Terms</a>
+                <a href="contact.html">Contact</a>
+                <a href="rss.xml" target="_blank">RSS Feed</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 SIVEAL Inc. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js?v=1.4"></script>
+    <script src="profile.js?v=1.4"></script>
+    
+</body>
+</html>
+
+</final_file_content>
+
+IMPORTANT: For any future changes to this file, use the final_file_content shown above as your reference. This content reflects the current state of the file, including any auto-formatting (e.g., if you used single quotes but the formatter converted them to double quotes). Always base your SEARCH/REPLACE operations on this final version to ensure accuracy.
+
+ <environment_details>
+# Visual Studio Code Visible Files
+FRONTEND/profile.html
+
+# Visual Studio Code Open Tabs
+FRONTEND/about.html
+FRONTEND/privacy.html
+FRONTEND/terms.html
+FRONTEND/contact.html
+FRONTEND/advertise.html
+BACKEND/data/news.json
+FRONTEND/rss.xml
+FRONTEND/admin.js
+FRONTEND/article.html
+BACKEND/data/users.json
+FRONTEND/style.css
+BACKEND/package.json
+BACKEND/server.js
+FRONTEND/login.html
+FRONTEND/script.js
+FRONTEND/index.html
+FRONTEND/profile.js
+FRONTEND/admin.html
+FRONTEND/profile.html
+FRONTEND/netlify.toml
+FRONTEND/article.js
+FRONTEND/_redirects
+FRONTEND/README.md
+README.md
+.gitignore
+
+# Current Time
+12/25/2025, 12:16:40 PM (Asia/Baku, UTC+4:00)
+
+# Context Window Usage
+193,718 / 256K tokens used (76%)
+
+# Current Mode
+ACT MODE
