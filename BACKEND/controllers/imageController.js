@@ -52,10 +52,9 @@ const uploadImage = async (req, res) => {
             data: {
                 filename: req.file.filename,
                 originalName: req.file.originalname,
-                url: req.file.path, // Cloudinary URL
+                url: req.file.path,
                 publicId: req.file.filename,
-                size: req.file.size,
-                format: req.file.format
+                size: req.file.size
             }
         });
 
@@ -84,8 +83,7 @@ const uploadMultipleImages = async (req, res) => {
             originalName: file.originalname,
             url: file.path,
             publicId: file.filename,
-            size: file.size,
-            format: file.format
+            size: file.size
         }));
         
         res.status(200).json({
@@ -117,19 +115,26 @@ const deleteImage = async (req, res) => {
         }
 
         // Delete from Cloudinary
-        const result = await cloudinary.uploader.destroy(`siveal/${publicId}`);
-        
-        if (result.result === 'ok') {
-            res.status(200).json({
-                success: true,
-                message: 'Image deleted successfully from Cloudinary'
-            });
-        } else {
-            res.status(404).json({
-                success: false,
-                message: 'Image not found or already deleted'
-            });
-        }
+        cloudinary.uploader.destroy(`siveal/${publicId}`, (error, result) => {
+            if (error) {
+                return res.status(500).json({
+                    success: false,
+                    message: 'Failed to delete image'
+                });
+            }
+            
+            if (result.result === 'ok') {
+                res.status(200).json({
+                    success: true,
+                    message: 'Image deleted successfully from Cloudinary'
+                });
+            } else {
+                res.status(404).json({
+                    success: false,
+                    message: 'Image not found or already deleted'
+                });
+            }
+        });
 
     } catch (error) {
         console.error('Image delete error:', error);
@@ -153,19 +158,26 @@ const getImageInfo = async (req, res) => {
             });
         }
 
-        const result = await cloudinary.api.resource(`siveal/${publicId}`);
-        
-        res.status(200).json({
-            success: true,
-            data: {
-                publicId: result.public_id,
-                format: result.format,
-                width: result.width,
-                height: result.height,
-                size: result.bytes,
-                url: result.secure_url,
-                created: result.created_at
+        cloudinary.api.resource(`siveal/${publicId}`, (error, result) => {
+            if (error) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Image not found'
+                });
             }
+            
+            res.status(200).json({
+                success: true,
+                data: {
+                    publicId: result.public_id,
+                    format: result.format,
+                    width: result.width,
+                    height: result.height,
+                    size: result.bytes,
+                    url: result.secure_url,
+                    created: result.created_at
+                }
+            });
         });
 
     } catch (error) {
@@ -181,28 +193,34 @@ const getImageInfo = async (req, res) => {
 // List uploaded images from Cloudinary
 const listImages = async (req, res) => {
     try {
-        const result = await cloudinary.api.resources({
+        cloudinary.api.resources({
             type: 'upload',
             prefix: 'siveal/',
             max_results: 100
-        });
+        }, (error, result) => {
+            if (error) {
+                return res.status(500).json({
+                    success: false,
+                    message: 'Failed to list images'
+                });
+            }
 
-        const images = result.resources.map(resource => ({
-            publicId: resource.public_id,
-            format: resource.format,
-            width: resource.width,
-            height: resource.height,
-            size: resource.bytes,
-            url: resource.secure_url,
-            created: resource.created_at
-        }));
+            const images = result.resources.map(resource => ({
+                publicId: resource.public_id,
+                format: resource.format,
+                width: resource.width,
+                height: resource.height,
+                size: resource.bytes,
+                url: resource.secure_url,
+                created: resource.created_at
+            }));
 
-        // Sort by creation date (newest first)
-        images.sort((a, b) => new Date(b.created) - new Date(a.created));
+            images.sort((a, b) => new Date(b.created) - new Date(a.created));
 
-        res.status(200).json({
-            success: true,
-            data: images
+            res.status(200).json({
+                success: true,
+                data: images
+            });
         });
 
     } catch (error) {
@@ -215,7 +233,7 @@ const listImages = async (req, res) => {
     }
 };
 
-// Upload image from URL (for migrations/external sources)
+// Upload image from URL
 const uploadFromUrl = async (req, res) => {
     try {
         const { url, filename } = req.body;
@@ -227,23 +245,30 @@ const uploadFromUrl = async (req, res) => {
             });
         }
 
-        const result = await cloudinary.uploader.upload(url, {
+        cloudinary.uploader.upload(url, {
             folder: 'siveal',
             public_id: filename || undefined,
             transformation: [{ width: 1200, height: 800, crop: 'limit', quality: 'auto' }]
-        });
-
-        res.status(200).json({
-            success: true,
-            message: 'Image uploaded from URL successfully',
-            data: {
-                publicId: result.public_id,
-                url: result.secure_url,
-                format: result.format,
-                width: result.width,
-                height: result.height,
-                size: result.bytes
+        }, (error, result) => {
+            if (error) {
+                return res.status(500).json({
+                    success: false,
+                    message: 'Failed to upload image from URL'
+                });
             }
+
+            res.status(200).json({
+                success: true,
+                message: 'Image uploaded from URL successfully',
+                data: {
+                    publicId: result.public_id,
+                    url: result.secure_url,
+                    format: result.format,
+                    width: result.width,
+                    height: result.height,
+                    size: result.bytes
+                }
+            });
         });
 
     } catch (error) {
